@@ -1,6 +1,6 @@
 package com.broheim.websocket.spring.handler;
 
-import com.framework.websocket.core.context.ChannelContext;
+import com.broheim.websocket.core.context.ChannelContext;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 

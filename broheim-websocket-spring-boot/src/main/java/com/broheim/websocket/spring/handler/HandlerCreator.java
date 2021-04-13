@@ -1,6 +1,6 @@
 package com.broheim.websocket.spring.handler;
 
-import com.framework.websocket.core.annonation.SocketEndpointPath;
+import com.broheim.websocket.core.annonation.SocketEndpointPath;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;

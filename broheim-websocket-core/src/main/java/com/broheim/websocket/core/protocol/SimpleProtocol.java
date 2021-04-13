@@ -4,6 +4,9 @@ package com.broheim.websocket.core.protocol;
 import com.broheim.websocket.core.context.ChannelContext;
 import com.broheim.websocket.core.exception.MessageProtocolException;
 import com.broheim.websocket.core.message.SimpleMessage;
+import com.broheim.websocket.core.util.StringUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.websocket.Session;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +79,7 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
         if (PING.equals(message.getCmd())) {
             return null;
         }
-        if (StringUtils.isEmpty(message.getBody())) {
+        if (StringUtil.isEmpty(message.getBody())) {
             return "";
         }
         return message.getBody();

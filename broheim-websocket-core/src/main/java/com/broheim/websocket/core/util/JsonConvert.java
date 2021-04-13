@@ -2,8 +2,10 @@ package com.broheim.websocket.core.util;
 
 
 import com.broheim.websocket.core.message.Message;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JsonUtil {
+public class JsonConvert {
     private static ObjectMapper objectMapper = new ObjectMapper();
 
     public static Message encode(String json, Class<?> clazz) throws JsonProcessingException {

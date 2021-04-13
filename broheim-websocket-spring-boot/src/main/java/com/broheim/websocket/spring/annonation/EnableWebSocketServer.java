@@ -3,6 +3,7 @@ package com.broheim.websocket.spring.annonation;
 
 
 import com.broheim.websocket.spring.server.WebSocketServerImportSelector;
+import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

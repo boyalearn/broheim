@@ -1,8 +1,8 @@
 package com.broheim.websocket.spring.processor;
 
-import com.framework.websocket.core.endpoint.AbstractWebSocketServerEndpoint;
-import com.framework.websocket.core.endpoint.EndpointCreator;
-import com.framework.websocket.spring.annonation.WebSocketController;
+import com.broheim.websocket.core.endpoint.AbstractWebSocketServerEndpoint;
+import com.broheim.websocket.core.endpoint.EndpointCreator;
+import com.broheim.websocket.spring.annonation.WebSocketController;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 import lombok.extern.slf4j.Slf4j;

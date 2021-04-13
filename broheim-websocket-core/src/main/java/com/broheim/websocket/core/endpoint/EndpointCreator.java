@@ -11,6 +11,7 @@ import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.StringMemberValue;
 
+
 public class EndpointCreator {
 
     public Class<AbstractWebSocketServerEndpoint> createEndpoint(String path) throws NotFoundException, CannotCompileException {

@@ -1,2 +1,4 @@
 /target/
 /broheim-websocket-core/target/
+/.idea/
+/broheim.iml

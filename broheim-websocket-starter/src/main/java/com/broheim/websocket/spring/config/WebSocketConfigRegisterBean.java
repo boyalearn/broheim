@@ -4,12 +4,12 @@ package com.broheim.websocket.spring.config;
 import com.broheim.websocket.core.config.ServerConfig;
 import com.broheim.websocket.core.context.PublisherHolder;
 import com.broheim.websocket.core.handler.Handler;
-import com.broheim.websocket.core.reactor.DefaultReactor;
 import com.broheim.websocket.core.reactor.Reactor;
 import com.broheim.websocket.spring.annonation.Command;
 import com.broheim.websocket.spring.annonation.WebSocketController;
 import com.broheim.websocket.spring.handler.HandlerCreator;
 import com.broheim.websocket.spring.handler.HandlerInvoker;
+import com.broheim.websocket.spring.reactor.CommandReactor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -54,7 +54,7 @@ public class WebSocketConfigRegisterBean implements InitializingBean, Applicatio
 
         Reactor reactor = applicationContext.getBean(Reactor.class);
         if (null == reactor) {
-            reactor = new DefaultReactor();
+            reactor = new CommandReactor();
         }
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.addReactor(reactor);

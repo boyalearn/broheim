@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>broheim-websocket-spring-boot</artifactId>
+    <artifactId>broheim-websocket-starter</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -86,7 +86,7 @@
 
                     <noJekyll>true</noJekyll>
                     <outputDirectory>${project.build.directory}/broheim-repository</outputDirectory>
-                    <branch>refs/heads/spring-boot</branch>
+                    <branch>refs/heads/starter</branch>
                     <includes>
                         <include>**/*</include>
                     </includes>

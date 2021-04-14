@@ -2,7 +2,10 @@ package com.broheim.websocket.core.thread;
 
 import com.broheim.websocket.core.context.ChannelContext;
 import com.broheim.websocket.core.message.SimpleMessage;
+import com.broheim.websocket.core.util.JsonConvert;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
 
 @Slf4j
 public class HeartbeatWorker implements Runnable {
@@ -26,7 +29,10 @@ public class HeartbeatWorker implements Runnable {
 
     @Override
     public void run() {
-        //channelContext.sendMessage(PING_DATA);
-        //log.debug("success is {}", channelContext.sendSyncMessage("1"));
+        try {
+            channelContext.sendText(JsonConvert.decode(PING_DATA));
+        } catch (IOException e) {
+            log.error("ping error", e);
+        }
     }
 }

@@ -5,7 +5,7 @@ import com.broheim.websocket.core.event.EventPublisher;
 import javax.websocket.Session;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public interface WebSocketServerEndpoint {
+public interface WebSocketEndpoint {
 
     AtomicInteger sendId();
 

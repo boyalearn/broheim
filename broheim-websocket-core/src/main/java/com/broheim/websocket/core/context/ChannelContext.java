@@ -1,6 +1,6 @@
 package com.broheim.websocket.core.context;
 
-import com.broheim.websocket.core.endpoint.WebSocketServerEndpoint;
+import com.broheim.websocket.core.endpoint.WebSocketEndpoint;
 import com.broheim.websocket.core.event.SendMessageEvent;
 import com.broheim.websocket.core.exception.MessageProtocolException;
 import com.broheim.websocket.core.listener.EventListener;
@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 public interface ChannelContext {
 
-    WebSocketServerEndpoint getEndpoint();
+    WebSocketEndpoint getEndpoint();
 
     String getMessage();
 

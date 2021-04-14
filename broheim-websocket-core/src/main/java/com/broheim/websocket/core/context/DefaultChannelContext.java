@@ -1,6 +1,6 @@
 package com.broheim.websocket.core.context;
 
-import com.broheim.websocket.core.endpoint.WebSocketServerEndpoint;
+import com.broheim.websocket.core.endpoint.WebSocketEndpoint;
 import com.broheim.websocket.core.event.SendAsyncMessageEvent;
 import com.broheim.websocket.core.event.SendMessageEvent;
 import com.broheim.websocket.core.exception.MessageProtocolException;
@@ -21,7 +21,7 @@ import java.io.IOException;
 @Slf4j
 public class DefaultChannelContext implements ChannelContext {
 
-    private WebSocketServerEndpoint endpoint;
+    private WebSocketEndpoint endpoint;
 
     private String message;
 
@@ -33,22 +33,22 @@ public class DefaultChannelContext implements ChannelContext {
 
     private EndpointConfig config;
 
-    public DefaultChannelContext(WebSocketServerEndpoint endpoint, Throwable exception) {
+    public DefaultChannelContext(WebSocketEndpoint endpoint, Throwable exception) {
         this.endpoint = endpoint;
         this.exception = exception;
     }
 
-    public DefaultChannelContext(WebSocketServerEndpoint endpoint, EndpointConfig config) {
+    public DefaultChannelContext(WebSocketEndpoint endpoint, EndpointConfig config) {
         this.endpoint = endpoint;
         this.config = config;
     }
 
-    public DefaultChannelContext(WebSocketServerEndpoint endpoint, String message) {
+    public DefaultChannelContext(WebSocketEndpoint endpoint, String message) {
         this.endpoint = endpoint;
         this.message = message;
     }
 
-    public DefaultChannelContext(WebSocketServerEndpoint endpoint, CloseReason closeReason) {
+    public DefaultChannelContext(WebSocketEndpoint endpoint, CloseReason closeReason) {
         this.endpoint = endpoint;
         this.closeReason = closeReason;
     }

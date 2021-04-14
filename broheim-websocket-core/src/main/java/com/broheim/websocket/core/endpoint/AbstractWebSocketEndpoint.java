@@ -20,7 +20,7 @@ import javax.websocket.Session;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public abstract class AbstractWebSocketServerEndpoint implements WebSocketServerEndpoint {
+public abstract class AbstractWebSocketEndpoint implements WebSocketEndpoint {
 
     private AtomicInteger sendId = new AtomicInteger(1);
 
@@ -28,7 +28,7 @@ public abstract class AbstractWebSocketServerEndpoint implements WebSocketServer
 
     private Session session;
 
-    public AbstractWebSocketServerEndpoint() {
+    public AbstractWebSocketEndpoint() {
         this.publisher = PublisherHolder.findEventPublisher(this.getClass());
     }
 

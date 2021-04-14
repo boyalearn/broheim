@@ -14,7 +14,7 @@ import javassist.bytecode.annotation.StringMemberValue;
 
 public class EndpointCreator {
 
-    public Class<AbstractWebSocketServerEndpoint> createEndpoint(String path) throws NotFoundException, CannotCompileException {
+    public Class<AbstractWebSocketEndpoint> createEndpoint(String path) throws NotFoundException, CannotCompileException {
 
         ClassPool cp = ClassPool.getDefault();
         ClassLoader classLoader = this.getClass().getClassLoader();
@@ -22,7 +22,7 @@ public class EndpointCreator {
         cp.appendClassPath(classLoaderPath);
 
         CtClass ctClass = cp.makeClass("com.framework.websocket.core.endpoint.Dynamic" + path.replaceAll("/", "") + "WebSocketServerEndpoint");
-        CtClass superClass = cp.getCtClass(AbstractWebSocketServerEndpoint.class.getName());
+        CtClass superClass = cp.getCtClass(AbstractWebSocketEndpoint.class.getName());
         ctClass.setSuperclass(superClass);
 
         ClassFile ctFile = ctClass.getClassFile();
@@ -35,7 +35,7 @@ public class EndpointCreator {
         annotationsAttribute.addAnnotation(component);
         ctFile.addAttribute(annotationsAttribute);
 
-        return (Class<AbstractWebSocketServerEndpoint>) ctClass.toClass();
+        return (Class<AbstractWebSocketEndpoint>) ctClass.toClass();
     }
 
 }

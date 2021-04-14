@@ -16,7 +16,7 @@ public class PublisherHolder {
 
     public static EventPublisher findEventPublisher(Class<?> clazz) {
         if (null == SERVER_CONFIG) {
-            return null;
+            SERVER_CONFIG=new ServerConfig();
         }
         EventPublisher publisher = PUBLISHER_CENTER.get(clazz);
         if (null == publisher) {

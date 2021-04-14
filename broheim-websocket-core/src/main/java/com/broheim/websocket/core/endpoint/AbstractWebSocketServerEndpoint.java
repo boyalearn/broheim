@@ -7,7 +7,7 @@ import com.broheim.websocket.core.event.CloseEvent;
 import com.broheim.websocket.core.event.ConnectionEvent;
 import com.broheim.websocket.core.event.ErrorEvent;
 import com.broheim.websocket.core.event.EventPublisher;
-import com.broheim.websocket.core.event.MessageEvent;
+import com.broheim.websocket.core.event.OnMessageEvent;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.CloseReason;
@@ -41,6 +41,11 @@ public abstract class AbstractWebSocketServerEndpoint implements WebSocketServer
         return session;
     }
 
+    @Override
+    public EventPublisher getEventPublisher() {
+        return publisher;
+    }
+
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
         log.debug("session id {} connect...", session.getId());
@@ -52,7 +57,7 @@ public abstract class AbstractWebSocketServerEndpoint implements WebSocketServer
     @OnMessage
     public void onMessage(Session session, String message) {
         log.debug("session id {} on message...", session.getId());
-        publisher.publish(new MessageEvent(new DefaultChannelContext(this, message)));
+        publisher.publish(new OnMessageEvent(new DefaultChannelContext(this, message)));
     }
 
     @OnError

@@ -3,28 +3,24 @@ package com.broheim.websocket.core.protocol;
 
 import com.broheim.websocket.core.context.ChannelContext;
 import com.broheim.websocket.core.exception.MessageProtocolException;
+import com.broheim.websocket.core.reactor.Reactor;
 
-import javax.websocket.Session;
-
+/**
+ * 协议的作用就是编码和解码消息头
+ *
+ * @param <E>
+ */
 public interface Protocol<E> {
 
     /**
      * 编码协议层消息
      *
-     * @param appMessage 应用层消息
+     * @param message 应用层消息
      * @return 协议层消息
      * @throws MessageProtocolException
      */
-    E encode(String appMessage) throws MessageProtocolException;
+    String encode(ChannelContext channelContext,String message) throws MessageProtocolException;
 
-    /**
-     * 编码协议层消息
-     *
-     * @param appMessage 应用层消息
-     * @return 协议层消息
-     * @throws MessageProtocolException
-     */
-    String addProtocolHeader(String appMessage, int sendId) throws MessageProtocolException;
 
     /**
      * 解析协议层消息
@@ -37,38 +33,13 @@ public interface Protocol<E> {
 
 
     /**
-     * 返回应用消息
-     * <p>
-     * 如果通信协议则返回null;
+     * 协议解析层逻辑处理
      *
-     * @param channelContext
-     * @param message
-     * @return
+     * @param channelContext 连接管道
+     * @param message        原始消息
+     * @param reactor        业务消息分发器
+     * @throws MessageProtocolException
      */
-    String doProtocol(ChannelContext channelContext, E message);
+    void service(ChannelContext channelContext, String message, Reactor reactor) throws MessageProtocolException;
 
-    /**
-     * 让持有该Session的线程等待
-     *
-     * @param session
-     */
-    void wait(int sendId, Session session) throws InterruptedException;
-
-
-    /**
-     * 让持有该Session的线程等待带超时时间
-     *
-     * @param session
-     */
-    void wait(int sendId, Session session, long timeOut) throws InterruptedException;
-
-
-    /**
-     * 唤醒持有该Session的线程
-     *
-     * @param session
-     */
-    default void notify(Session session) {
-        session.notifyAll();
-    }
 }

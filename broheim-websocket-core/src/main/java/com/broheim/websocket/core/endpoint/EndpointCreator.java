@@ -18,15 +18,15 @@ public class EndpointCreator {
 
         ClassPool cp = ClassPool.getDefault();
         ClassLoader classLoader = this.getClass().getClassLoader();
-        LoaderClassPath classLoaderPath=new LoaderClassPath(classLoader);
+        LoaderClassPath classLoaderPath = new LoaderClassPath(classLoader);
         cp.appendClassPath(classLoaderPath);
-        CtClass ctClass = cp.makeClass("com.framework.websocket.core.endpoint.Dynamic"+path.replaceAll("/","")+"WebSocketServerEndpoint");
+
+        CtClass ctClass = cp.makeClass("com.framework.websocket.core.endpoint.Dynamic" + path.replaceAll("/", "") + "WebSocketServerEndpoint");
         CtClass superClass = cp.getCtClass(AbstractWebSocketServerEndpoint.class.getName());
         ctClass.setSuperclass(superClass);
 
         ClassFile ctFile = ctClass.getClassFile();
         ConstPool constpool = ctFile.getConstPool();
-
         AnnotationsAttribute annotationsAttribute = new AnnotationsAttribute(constpool, AnnotationsAttribute.visibleTag);
         Annotation serverEndpoint = new Annotation("javax.websocket.server.ServerEndpoint", constpool);
         serverEndpoint.addMemberValue("value", new StringMemberValue(path, constpool));

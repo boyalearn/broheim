@@ -26,7 +26,7 @@ public class HeartbeatWorker implements Runnable {
 
     @Override
     public void run() {
-        channelContext.sendMessage(PING_DATA);
-        log.debug("success is {}", channelContext.sendSyncMessage("1"));
+        //channelContext.sendMessage(PING_DATA);
+        //log.debug("success is {}", channelContext.sendSyncMessage("1"));
     }
 }

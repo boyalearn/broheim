@@ -2,7 +2,7 @@ package com.broheim.websocket.core.listener;
 
 
 import com.broheim.websocket.core.acceptor.Acceptor;
-import com.broheim.websocket.core.event.MessageEvent;
+import com.broheim.websocket.core.event.OnMessageEvent;
 
 public class MessageReceiveListener<Event> implements EventListener<Event> {
 
@@ -14,8 +14,8 @@ public class MessageReceiveListener<Event> implements EventListener<Event> {
 
     @Override
     public void onEvent(Event event) {
-        if (event instanceof MessageEvent) {
-            acceptor.doAccept(((MessageEvent) event).getChannelContext());
+        if (event instanceof OnMessageEvent) {
+            acceptor.doAccept(((OnMessageEvent) event).getChannelContext());
         }
     }
 }

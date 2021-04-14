@@ -1,7 +1,10 @@
 package com.broheim.websocket.core.context;
 
 import com.broheim.websocket.core.endpoint.WebSocketServerEndpoint;
-import com.broheim.websocket.core.message.Message;
+import com.broheim.websocket.core.event.SendAsyncMessageEvent;
+import com.broheim.websocket.core.event.SendMessageEvent;
+import com.broheim.websocket.core.exception.MessageProtocolException;
+import com.broheim.websocket.core.listener.EventListener;
 import com.broheim.websocket.core.message.SimpleMessage;
 import com.broheim.websocket.core.protocol.Protocol;
 import com.broheim.websocket.core.protocol.SimpleProtocol;
@@ -11,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.CloseReason;
 import javax.websocket.EndpointConfig;
+import java.io.IOException;
 
 @Getter
 @Setter
@@ -49,31 +53,28 @@ public class DefaultChannelContext implements ChannelContext {
         this.closeReason = closeReason;
     }
 
+
     @Override
-    public boolean sendSyncMessage(String message) {
-        synchronized (this.endpoint.getSession()) {
-            long start = System.currentTimeMillis();
-            try {
-                int sendId = this.endpoint.sendId().getAndIncrement();
-                this.endpoint.getSession().getBasicRemote().sendText(protocol.addProtocolHeader(message, sendId));
-                protocol.wait(sendId, this.endpoint.getSession());
-            } catch (Exception e) {
-                log.error("send message exception. spend {} ms", System.currentTimeMillis() - start, e);
-                return false;
-            }
-        }
+    public void sendMessageAsync(String message) throws MessageProtocolException {
+        this.endpoint.getEventPublisher().publish(new SendAsyncMessageEvent(this, protocol.encode(this, message)));
+    }
+
+    @Override
+    public boolean sendMessageSync(String message) throws MessageProtocolException {
+        this.endpoint.getEventPublisher().publish(new SendAsyncMessageEvent(this, protocol.encode(this, message)));
         return true;
     }
 
     @Override
-    public void sendAsyncMessage(String message) {
-        synchronized (this.endpoint.getSession()) {
-            this.endpoint.getSession().getAsyncRemote().sendText(message);
+    public void sendMessage(String message, EventListener<SendMessageEvent> eventListener) throws MessageProtocolException {
+        SendMessageEvent sendMessageEvent = new SendAsyncMessageEvent(this, protocol.encode(this, message));
+        if (null != eventListener) {
+            eventListener.onEvent(sendMessageEvent);
         }
     }
 
     @Override
-    public void sendMessage(Message message) {
-
+    public void sendText(String text) throws IOException {
+        this.endpoint.getEventPublisher().publish(new SendAsyncMessageEvent(this, text));
     }
 }

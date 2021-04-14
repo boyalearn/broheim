@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class DefaultAcceptor implements Acceptor {
+public class DefaultAcceptor<E> implements Acceptor {
 
     private static final ThreadPoolExecutor EXECUTOR = new ThreadPoolExecutor(
             4, 8, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(5000),
@@ -21,7 +21,7 @@ public class DefaultAcceptor implements Acceptor {
 
     private Reactor reactor;
 
-    private Protocol<Message> protocol;
+    private Protocol<E> protocol;
 
     public DefaultAcceptor() {
     }

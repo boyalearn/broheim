@@ -7,8 +7,9 @@ import com.broheim.websocket.core.annonation.SocketEndpointPath;
 import com.broheim.websocket.core.event.DefaultEventPublisher;
 import com.broheim.websocket.core.event.EventPublisher;
 import com.broheim.websocket.core.handler.Handler;
+import com.broheim.websocket.core.listener.AsyncMessageSendListener;
 import com.broheim.websocket.core.listener.EventListener;
-import com.broheim.websocket.core.listener.HeartbeatListener;
+import com.broheim.websocket.core.listener.ServerHeartbeatListener;
 import com.broheim.websocket.core.listener.MessageReceiveListener;
 import com.broheim.websocket.core.protocol.Protocol;
 import com.broheim.websocket.core.protocol.SimpleProtocol;
@@ -103,8 +104,9 @@ public class ServerConfig {
                 eventListenerList.add(h);
             }
         });
-        eventListenerList.add(new HeartbeatListener());
+        eventListenerList.add(new ServerHeartbeatListener());
         eventListenerList.add(new MessageReceiveListener(acceptor));
+        eventListenerList.add(new AsyncMessageSendListener());
         return eventListenerList;
     }
 

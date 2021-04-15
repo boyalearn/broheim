@@ -8,21 +8,17 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
 
 @Slf4j
-public class HeartbeatWorker implements Runnable {
-
-
-    private final static SimpleMessage PONG_DATA = new SimpleMessage();
+public class ServerHeartbeatWorker implements Runnable {
 
     private final static SimpleMessage PING_DATA = new SimpleMessage();
 
     static {
-        PONG_DATA.setCmd("pong");
         PING_DATA.setCmd("ping");
     }
 
     private ChannelContext channelContext;
 
-    public HeartbeatWorker(ChannelContext channelContext) {
+    public ServerHeartbeatWorker(ChannelContext channelContext) {
         this.channelContext = channelContext;
     }
 

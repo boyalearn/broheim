@@ -12,4 +12,5 @@ public interface WebSocketEndpoint {
     Session getSession();
 
     EventPublisher getEventPublisher();
+
 }

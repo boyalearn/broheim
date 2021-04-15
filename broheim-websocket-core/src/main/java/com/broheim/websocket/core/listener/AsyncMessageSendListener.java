@@ -25,15 +25,7 @@ public class AsyncMessageSendListener implements EventListener<Event> {
             SendAsyncMessageEvent asyncMessageEvent = (SendAsyncMessageEvent) event;
             String sendMessage = asyncMessageEvent.getMessage();
             try {
-                Integer serialNo = ((SimpleMessage) (channelContext.getProtocol().decode(sendMessage))).getSerialNo();
-                synchronized (session) {
-
-                    session.getBasicRemote().sendText(sendMessage);
-                    session.wait();
-                    while (!messageIdSet.contains(serialNo)) {
-                        session.wait();
-                    }
-                }
+                session.getBasicRemote().sendText(sendMessage);
             } catch (Exception e) {
                 throw new RuntimeException("Send Error");
             }

@@ -5,7 +5,7 @@ import com.broheim.websocket.core.context.ChannelContext;
 import com.broheim.websocket.core.context.DefaultChannelContext;
 import com.broheim.websocket.core.event.CloseEvent;
 import com.broheim.websocket.core.event.ConnectionEvent;
-import com.broheim.websocket.core.thread.HeartbeatWorker;
+import com.broheim.websocket.core.thread.ServerHeartbeatWorker;
 
 import javax.websocket.Session;
 import java.util.Map;
@@ -16,7 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class HeartbeatListener<Event> implements EventListener<Event> {
+public class ServerHeartbeatListener<Event> implements EventListener<Event> {
 
     private long delay = 2;
 
@@ -41,7 +41,7 @@ public class HeartbeatListener<Event> implements EventListener<Event> {
     public void startHeartBeat(ChannelContext channelContext) {
         DefaultChannelContext context = (DefaultChannelContext) channelContext;
         Session session = context.getEndpoint().getSession();
-        ScheduledFuture<?> future = HEART_POOL.scheduleWithFixedDelay(new HeartbeatWorker(context), this.delay, this.delay, TimeUnit.SECONDS);
+        ScheduledFuture<?> future = HEART_POOL.scheduleWithFixedDelay(new ServerHeartbeatWorker(context), this.delay, this.delay, TimeUnit.SECONDS);
         runnableMap.put(session, future);
     }
 

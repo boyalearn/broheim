@@ -15,7 +15,6 @@ public class ServerTest {
         SpringApplication.run(ServerTest.class, args);
     }
 
-
     @Bean
     public ServerEndpointExporter serverEndpointExporter() {
         return new ServerEndpointExporter();

@@ -5,25 +5,20 @@ import com.broheim.websocket.core.protocol.Protocol;
 import com.broheim.websocket.core.reactor.Reactor;
 import com.broheim.websocket.core.thread.NamedThreadFactory;
 import com.broheim.websocket.core.thread.Worker;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
-public class DefaultAcceptor<E> implements Acceptor {
+public class ClientDefaultAcceptor<E> implements Acceptor {
 
     private static final ThreadPoolExecutor EXECUTOR = new ThreadPoolExecutor(
-            4, 8, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(5000),
+            1, 2, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1000),
             new NamedThreadFactory("websocket-reactor-pool-"), new ThreadPoolExecutor.AbortPolicy());
 
     private Reactor reactor;
 
     private Protocol<E> protocol;
-
-    public DefaultAcceptor() {
-    }
 
     @Override
     public void setReactor(Reactor reactor) {

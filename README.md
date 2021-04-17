@@ -84,8 +84,8 @@ Handler与业务相关。将业务上的处理逻辑在handle方法中处理。
 
 ## Endpoint设计架构
 
-![avatar](/doc/endpoint设计.png)
+![avatar](https://github.com/boyalearn/broheim/blob/master/doc/endpoint设计.png)
 
 ## ChannelContext设计架构
 
-![avatar](/doc/ChannelContext设计.png)
+![avatar](https://github.com/boyalearn/broheim/blob/master/doc/ChannelContext设计.png)

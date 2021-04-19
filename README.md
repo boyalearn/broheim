@@ -41,7 +41,7 @@
     </repositories>
 ```
 
-编写启动类
+编写服务端启动类
 
 ```java
 @SpringBootApplication
@@ -69,6 +69,32 @@ public class Application {
 
 这样一个服务端程序就已经开发好了。
 当客户端发来一个{"cmd":"hello"，"body":"hello world"}消息时。服务端被注解@Command("hello")的方法会处理该消息。
+
+编写客户端启动类
+
+```java
+public class ClientTest {
+    public static void main(String[] args) throws InterruptedException {
+        String url = "ws://gitlab.simple.com:8000/ws";
+        ClientConfig clientConfig = new ClientConfig();
+        List<Handler> handlerList=new ArrayList<>();
+        handlerList.add(new ClientHandler());
+        clientConfig.setHandlers(handlerList);
+        new WebSocketClient(url, clientConfig);
+    }
+
+    public static class ClientHandler implements Handler{
+        @Override
+        public void handle(ChannelContext channelContext, String message) {
+            System.out.println("accept message :" +message);
+        }
+    }
+}
+```
+
+其他语言客户端
+
+[C#](https://github.com/boyalearn/dotnet-websocket-client/tree/master/WebSocketClientDemo)
 
 # 核心概念
 ## Protocol协议 

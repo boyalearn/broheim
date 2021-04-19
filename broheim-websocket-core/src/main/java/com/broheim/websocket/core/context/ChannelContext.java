@@ -27,6 +27,16 @@ public interface ChannelContext {
     void sendMessageAsync(String message) throws MessageProtocolException, IOException;
 
     /**
+     * 异步消息发送
+     *
+     * @param message
+     * @param timeOut
+     * @throws MessageProtocolException
+     * @throws IOException
+     */
+    void sendMessageAsync(String message, Long timeOut) throws MessageProtocolException, IOException;
+
+    /**
      * 同步发送消息
      *
      * @param message

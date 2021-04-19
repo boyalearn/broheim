@@ -25,7 +25,26 @@ public class AsyncMessageSendListener implements EventListener<Event> {
             SendAsyncMessageEvent asyncMessageEvent = (SendAsyncMessageEvent) event;
             String sendMessage = asyncMessageEvent.getMessage();
             try {
-                session.getBasicRemote().sendText(sendMessage);
+                synchronized (session) {
+                    Integer serialNo = channelContext.getEndpoint().sendId().getAndIncrement();
+                    channelContext.getProtocol().encode(channelContext, sendMessage, serialNo);
+                    session.getBasicRemote().sendText(sendMessage);
+                    Long timeOut = asyncMessageEvent.getTimeOut();
+                    //没有设置超时时间的同步发送默认设置3分钟也不可能无限制等待。
+                    if (null == timeOut) {
+                        timeOut = 3 * 60 * 1000L;
+                    }
+                    Long startTime = System.currentTimeMillis();
+                    session.wait(timeOut);
+                    Long leaveTimeOut = timeOut + startTime - System.currentTimeMillis();
+                    while (leaveTimeOut > 0 && !messageIdSet.contains(serialNo)) {
+                        session.wait(leaveTimeOut);
+                        leaveTimeOut = timeOut + startTime - System.currentTimeMillis();
+                    }
+                    if (leaveTimeOut < 0) {
+                        throw new RuntimeException("send time out");
+                    }
+                }
             } catch (Exception e) {
                 throw new RuntimeException("Send Error");
             }
@@ -40,16 +59,18 @@ public class AsyncMessageSendListener implements EventListener<Event> {
                 log.error("parse protocol error", e);
                 return;
             }
-            synchronized (session) {
-                CopyOnWriteArraySet<Integer> idSet = messageIdSet.get(session);
-                if (null == idSet) {
-                    messageIdSet.put(session, new CopyOnWriteArraySet());
+            if (null != messageObj.getSerialNo() && "ok".equals(messageObj.getCmd())) {
+                synchronized (session) {
+                    CopyOnWriteArraySet<Integer> idSet = messageIdSet.get(session);
+                    if (null == idSet) {
+                        messageIdSet.put(session, new CopyOnWriteArraySet());
+                    }
+                    idSet = messageIdSet.get(session);
+                    idSet.add(messageObj.getSerialNo());
+                    session.notifyAll();
                 }
-                idSet = messageIdSet.get(session);
-                idSet.add(messageObj.getSerialNo());
-                session.notifyAll();
+                return;
             }
-            return;
         }
     }
 }

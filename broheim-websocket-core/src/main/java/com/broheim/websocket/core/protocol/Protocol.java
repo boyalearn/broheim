@@ -23,6 +23,16 @@ public interface Protocol<E> {
 
 
     /**
+     * 编码协议层消息
+     *
+     * @param message 应用层消息
+     * @return 协议层消息
+     * @throws MessageProtocolException
+     */
+    String encode(ChannelContext channelContext,String message,Integer serialNo) throws MessageProtocolException;
+
+
+    /**
      * 解析协议层消息
      *
      * @param message 协议层消息

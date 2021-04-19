@@ -3,6 +3,7 @@ package com.broheim.websocket.core.context;
 import com.broheim.websocket.core.endpoint.WebSocketEndpoint;
 import com.broheim.websocket.core.event.SendAsyncMessageEvent;
 import com.broheim.websocket.core.event.SendMessageEvent;
+import com.broheim.websocket.core.event.SendSyncMessageEvent;
 import com.broheim.websocket.core.exception.MessageProtocolException;
 import com.broheim.websocket.core.listener.EventListener;
 import com.broheim.websocket.core.message.SimpleMessage;
@@ -56,18 +57,25 @@ public class DefaultChannelContext implements ChannelContext {
 
     @Override
     public void sendMessageAsync(String message) throws MessageProtocolException {
-        this.endpoint.getEventPublisher().publish(new SendAsyncMessageEvent(this, protocol.encode(this, message)));
+        this.endpoint.getEventPublisher().publish(new SendAsyncMessageEvent(this, message));
+    }
+
+    @Override
+    public void sendMessageAsync(String message, Long timeOut) throws MessageProtocolException, IOException {
+        SendAsyncMessageEvent asyncMessageEvent = new SendAsyncMessageEvent(this, message);
+        asyncMessageEvent.setTimeOut(timeOut);
+        this.endpoint.getEventPublisher().publish(asyncMessageEvent);
     }
 
     @Override
     public boolean sendMessageSync(String message) throws MessageProtocolException {
-        this.endpoint.getEventPublisher().publish(new SendAsyncMessageEvent(this, protocol.encode(this, message)));
+        this.endpoint.getEventPublisher().publish(new SendSyncMessageEvent(this, protocol.encode(this, message)));
         return true;
     }
 
     @Override
     public void sendMessage(String message, EventListener<SendMessageEvent> eventListener) throws MessageProtocolException {
-        SendMessageEvent sendMessageEvent = new SendAsyncMessageEvent(this, protocol.encode(this, message));
+        SendMessageEvent sendMessageEvent = new SendSyncMessageEvent(this, protocol.encode(this, message));
         if (null != eventListener) {
             eventListener.onEvent(sendMessageEvent);
         }
@@ -75,6 +83,6 @@ public class DefaultChannelContext implements ChannelContext {
 
     @Override
     public void sendText(String text) throws IOException {
-        this.endpoint.getEventPublisher().publish(new SendAsyncMessageEvent(this, text));
+        this.endpoint.getEventPublisher().publish(new SendSyncMessageEvent(this, text));
     }
 }

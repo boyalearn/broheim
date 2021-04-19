@@ -34,6 +34,18 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
         }
     }
 
+    @Override
+    public String encode(ChannelContext channelContext, String message, Integer serialNo) throws MessageProtocolException {
+        SimpleMessage simpleMessage = new SimpleMessage();
+        simpleMessage.setBody(message);
+        simpleMessage.setSerialNo(serialNo);
+        try {
+            return objectMapper.writeValueAsString(message);
+        } catch (JsonProcessingException e) {
+            throw new MessageProtocolException();
+        }
+    }
+
 
     @Override
     public SimpleMessage decode(String message) throws MessageProtocolException {

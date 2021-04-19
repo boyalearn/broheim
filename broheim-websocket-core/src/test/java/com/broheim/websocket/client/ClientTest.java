@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ClientTest {
     public static void main(String[] args) throws InterruptedException {
-        String url = "ws://localhost:8000/ws";
+        String url = "ws://gitlab.simple.com:8000/ws";
         ClientConfig clientConfig = new ClientConfig();
         List<Handler> handlerList=new ArrayList<>();
         handlerList.add(new ClientHandler());

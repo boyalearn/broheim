@@ -11,6 +11,7 @@
     <modules>
         <module>broheim-websocket-core</module>
         <module>broheim-websocket-starter</module>
+        <module>broheim-websocket-demo</module>
     </modules>
 
     <properties>

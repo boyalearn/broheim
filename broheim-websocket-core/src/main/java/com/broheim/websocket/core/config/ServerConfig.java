@@ -58,6 +58,7 @@ public class ServerConfig {
         List<EventListener> eventListenerList = findEventListener(endpointPath, acceptor);
         EventPublisher publisher = findPublisher(endpointPath);
         publisher.addListeners(eventListenerList);
+        publisher.addHandlerList(handlerList);
         return publisher;
     }
 
@@ -104,6 +105,7 @@ public class ServerConfig {
         eventListenerList.add(new ServerHeartbeatListener());
         eventListenerList.add(new MessageReceiveListener(acceptor));
         eventListenerList.add(new SyncMessageSendListener());
+        eventListenerList.add(new RequestResponseMessageListener());
         eventListenerList.add(new AsyncMessageSendListener());
         return eventListenerList;
     }

@@ -1,6 +1,8 @@
 package com.broheim.websocket.client;
 
+import com.broheim.websocket.core.annonation.SocketEndpointPath;
 import com.broheim.websocket.core.endpoint.AbstractWebSocketEndpoint;
+import com.broheim.websocket.core.handler.AsyncHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;

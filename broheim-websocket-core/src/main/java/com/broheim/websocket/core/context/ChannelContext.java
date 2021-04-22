@@ -3,10 +3,13 @@ package com.broheim.websocket.core.context;
 import com.broheim.websocket.core.endpoint.WebSocketEndpoint;
 import com.broheim.websocket.core.event.SendMessageEvent;
 import com.broheim.websocket.core.exception.MessageProtocolException;
+import com.broheim.websocket.core.handler.Handler;
 import com.broheim.websocket.core.listener.EventListener;
 import com.broheim.websocket.core.protocol.Protocol;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 发送响应数据的统一对外接口
@@ -18,6 +21,8 @@ public interface ChannelContext {
     String getMessage();
 
     Protocol getProtocol();
+
+    List<Handler> getHandlerList();
 
     /**
      * 异步消息发送
@@ -51,6 +56,14 @@ public interface ChannelContext {
      * @param eventListener
      */
     void sendMessage(String message, EventListener<SendMessageEvent> eventListener) throws MessageProtocolException;
+
+
+    /**
+     * 发送同步消息。请求响应模型
+     *
+     * @param message
+     */
+    Object sendMessage(String message) throws MessageProtocolException, ExecutionException, InterruptedException;
 
     /**
      * 发送最原始的消息

@@ -34,6 +34,13 @@ public class WebSocketConfigRegisterBean implements InitializingBean, Applicatio
 
         List<Handler> handlerList = new ArrayList<>();
 
+        String[] handlerNames = applicationContext.getBeanNamesForType(Handler.class);
+
+        for(String handlerName:handlerNames){
+            Handler handler=(Handler) applicationContext.getBean(handlerName);
+            handlerList.add(handler);
+        }
+
         for (String webSocketControllerName : webSocketControllerNames) {
             Object bean = applicationContext.getBean(webSocketControllerName);
             WebSocketController webSocketController = bean.getClass().getAnnotation(WebSocketController.class);

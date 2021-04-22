@@ -8,6 +8,7 @@ import com.broheim.websocket.core.event.ConnectionEvent;
 import com.broheim.websocket.core.event.ErrorEvent;
 import com.broheim.websocket.core.event.EventPublisher;
 import com.broheim.websocket.core.event.OnMessageEvent;
+import com.broheim.websocket.core.exception.MessageProtocolException;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.ClientEndpoint;
@@ -26,6 +27,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -42,7 +44,7 @@ public class WebSocketClient implements WebSocketEndpoint {
 
     private static Map<String, EventPublisher> publisherCenter = new ConcurrentHashMap();
 
-    private EventPublisher eventPublisher;
+    private volatile EventPublisher eventPublisher;
 
     private volatile long lastAcceptTime;
 
@@ -56,6 +58,7 @@ public class WebSocketClient implements WebSocketEndpoint {
     public WebSocketClient(String url, ClientConfig config) {
         URL = url;
         CONFIG = config;
+        this.eventPublisher=getEventPublisher(URI.create(URL));
         try {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             URI uri = URI.create(URL);
@@ -98,7 +101,6 @@ public class WebSocketClient implements WebSocketEndpoint {
         log.debug("Client onMessage: " + message);
         this.lastAcceptTime = new Date().getTime();
         this.eventPublisher.publish(new OnMessageEvent(new DefaultChannelContext(this, message)));
-
     }
 
     @OnError
@@ -143,5 +145,4 @@ public class WebSocketClient implements WebSocketEndpoint {
         }
         return eventPublisher;
     }
-
 }

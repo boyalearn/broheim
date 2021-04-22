@@ -1,10 +1,12 @@
 package com.broheim.websocket.core.context;
 
 import com.broheim.websocket.core.endpoint.WebSocketEndpoint;
+import com.broheim.websocket.core.event.RequestResponseMessageEvent;
 import com.broheim.websocket.core.event.SendAsyncMessageEvent;
 import com.broheim.websocket.core.event.SendMessageEvent;
 import com.broheim.websocket.core.event.SendSyncMessageEvent;
 import com.broheim.websocket.core.exception.MessageProtocolException;
+import com.broheim.websocket.core.handler.Handler;
 import com.broheim.websocket.core.listener.EventListener;
 import com.broheim.websocket.core.message.SimpleMessage;
 import com.broheim.websocket.core.protocol.Protocol;
@@ -16,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import javax.websocket.CloseReason;
 import javax.websocket.EndpointConfig;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Getter
 @Setter
@@ -31,6 +36,8 @@ public class DefaultChannelContext implements ChannelContext {
     private CloseReason closeReason;
 
     private Protocol<SimpleMessage> protocol = new SimpleProtocol();
+
+    private List<Handler> handlerList;
 
     private EndpointConfig config;
 
@@ -56,6 +63,11 @@ public class DefaultChannelContext implements ChannelContext {
 
 
     @Override
+    public List<Handler> getHandlerList() {
+        return handlerList;
+    }
+
+    @Override
     public void sendMessageAsync(String message) throws MessageProtocolException {
         this.endpoint.getEventPublisher().publish(new SendAsyncMessageEvent(this, message));
     }
@@ -79,6 +91,14 @@ public class DefaultChannelContext implements ChannelContext {
         if (null != eventListener) {
             eventListener.onEvent(sendMessageEvent);
         }
+    }
+
+    @Override
+    public Object sendMessage(String message) throws MessageProtocolException, ExecutionException, InterruptedException {
+        RequestResponseMessageEvent requestResponseMessageEvent = new RequestResponseMessageEvent(this, message);
+        Future future = this.endpoint.getEventPublisher().publish(requestResponseMessageEvent);
+        future.get();
+        return requestResponseMessageEvent.getResult();
     }
 
     @Override

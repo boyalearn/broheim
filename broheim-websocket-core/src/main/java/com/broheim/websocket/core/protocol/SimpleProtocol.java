@@ -20,6 +20,7 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
     public String encode(ChannelContext channelContext, String appMessage) throws MessageProtocolException {
         SimpleMessage message = new SimpleMessage();
         message.setBody(appMessage);
+        message.setCmd(Protocol.SYNC);
         message.setSerialNo(channelContext.getEndpoint().sendId().getAndIncrement());
         try {
             return objectMapper.writeValueAsString(message);
@@ -46,7 +47,7 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
         simpleMessage.setCmd(cmd);
         simpleMessage.setSerialNo(serialNo);
         try {
-            return objectMapper.writeValueAsString(message);
+            return objectMapper.writeValueAsString(simpleMessage);
         } catch (JsonProcessingException e) {
             throw new MessageProtocolException();
         }
@@ -69,6 +70,9 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
             return;
         }
         if (Protocol.PING.equals(simpleMessage.getCmd())) {
+            return;
+        }
+        if (Protocol.REQ_RESP.equals(simpleMessage.getCmd())) {
             return;
         }
         if (StringUtil.isEmpty(simpleMessage.getBody())) {

@@ -56,7 +56,7 @@ public abstract class AbstractWebSocketEndpoint implements WebSocketEndpoint {
 
     @OnMessage
     public void onMessage(Session session, String message) {
-        log.debug("session id {} on message...", session.getId());
+        log.debug("session on message {}...", message);
         publisher.publish(new OnMessageEvent(new DefaultChannelContext(this, message)));
     }
 

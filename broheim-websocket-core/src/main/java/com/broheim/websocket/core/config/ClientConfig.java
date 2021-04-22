@@ -6,9 +6,7 @@ import com.broheim.websocket.core.acceptor.DefaultAcceptor;
 import com.broheim.websocket.core.event.DefaultEventPublisher;
 import com.broheim.websocket.core.event.EventPublisher;
 import com.broheim.websocket.core.handler.Handler;
-import com.broheim.websocket.core.listener.ClientHeartbeatListener;
-import com.broheim.websocket.core.listener.EventListener;
-import com.broheim.websocket.core.listener.MessageReceiveListener;
+import com.broheim.websocket.core.listener.*;
 import com.broheim.websocket.core.protocol.Protocol;
 import com.broheim.websocket.core.protocol.SimpleProtocol;
 import com.broheim.websocket.core.reactor.ClientDefaultReactor;
@@ -64,6 +62,7 @@ public class ClientConfig {
         if (eventListeners.isEmpty()) {
             eventListeners.add(new MessageReceiveListener(this.acceptor));
             eventListeners.add(new ClientHeartbeatListener());
+            eventListeners.add(new RequestResponseMessageListener());
         }
         returnPublisher.addListeners(eventListeners);
         return returnPublisher;

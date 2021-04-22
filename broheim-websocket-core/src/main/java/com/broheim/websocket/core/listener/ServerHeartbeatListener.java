@@ -39,7 +39,7 @@ public class ServerHeartbeatListener<Event> implements EventListener<Event> {
         }
 
         if (event instanceof OnMessageEvent) {
-            ChannelContext channelContext = ((ConnectionEvent) event).getChannelContext();
+            ChannelContext channelContext = ((OnMessageEvent) event).getChannelContext();
             String message = channelContext.getMessage();
             try {
                 SimpleMessage acceptMessage = (SimpleMessage) channelContext.getProtocol().decode(message);

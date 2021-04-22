@@ -10,12 +10,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-
 @Slf4j
 public class SimpleProtocol implements Protocol<SimpleMessage> {
-
-    private static final String OK = "ok";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -69,21 +65,8 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
     @Override
     public void service(ChannelContext channelContext, String message, Reactor reactor) throws MessageProtocolException {
         SimpleMessage simpleMessage = decode(message);
-        //如果应答的是OK 需要通知同步等待的Send线程
         if (Protocol.ACK.equals(simpleMessage.getCmd())) {
             return;
-        }
-        //自动应答表示已经收到消息
-        SimpleMessage autoRespMessage = new SimpleMessage();
-        autoRespMessage.setCmd(Protocol.ACK);
-        autoRespMessage.setBody(simpleMessage.getCmd());
-        autoRespMessage.setSerialNo(simpleMessage.getSerialNo());
-        try {
-            channelContext.sendText(objectMapper.writeValueAsString(autoRespMessage));
-        } catch (JsonProcessingException e) {
-            log.error("auto response json processing exception error", e);
-        } catch (IOException e) {
-            log.error("auto response io exception error", e);
         }
         if (Protocol.PING.equals(simpleMessage.getCmd())) {
             return;

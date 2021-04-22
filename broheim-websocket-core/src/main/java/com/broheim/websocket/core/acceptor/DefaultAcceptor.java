@@ -1,6 +1,7 @@
 package com.broheim.websocket.core.acceptor;
 
 import com.broheim.websocket.core.context.ChannelContext;
+import com.broheim.websocket.core.exception.MessageProtocolException;
 import com.broheim.websocket.core.protocol.Protocol;
 import com.broheim.websocket.core.reactor.Reactor;
 import com.broheim.websocket.core.thread.NamedThreadFactory;
@@ -13,10 +14,6 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class DefaultAcceptor<E> implements Acceptor {
-
-    private static final ThreadPoolExecutor EXECUTOR = new ThreadPoolExecutor(
-            4, 8, 60, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(5000),
-            new NamedThreadFactory("websocket-reactor-pool-"), new ThreadPoolExecutor.AbortPolicy());
 
     private Reactor reactor;
 
@@ -37,6 +34,10 @@ public class DefaultAcceptor<E> implements Acceptor {
 
     @Override
     public void doAccept(ChannelContext channelContext) {
-        EXECUTOR.execute(new Worker(this.reactor, this.protocol, channelContext));
+        try {
+            protocol.service(channelContext, channelContext.getMessage(), this.reactor);
+        } catch (MessageProtocolException e) {
+            log.error("message protocol parse error");
+        }
     }
 }

@@ -1,33 +1,28 @@
 package com.broheim.websocket.core.thread;
 
-import com.broheim.websocket.core.context.ChannelContext;
-import com.broheim.websocket.core.context.DefaultChannelContext;
-import com.broheim.websocket.core.exception.MessageProtocolException;
-import com.broheim.websocket.core.protocol.Protocol;
-import com.broheim.websocket.core.reactor.Reactor;
+import com.broheim.websocket.core.event.Event;
+import com.broheim.websocket.core.listener.EventListener;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 @Slf4j
 public class Worker<E> implements Runnable {
 
-    private Reactor reactor;
+    private List<EventListener> listeners;
 
-    private Protocol<String> protocol;
+    private Event event;
 
-    private ChannelContext context;
+    public Worker(List<EventListener> listeners, Event event) {
+        this.listeners = listeners;
+        this.event = event;
 
-    public Worker(Reactor reactor, Protocol<String> protocol, ChannelContext context) {
-        this.reactor = reactor;
-        this.protocol = protocol;
-        this.context = context;
     }
 
     @Override
     public void run() {
-        try {
-            protocol.service(this.context, ((DefaultChannelContext) this.context).getMessage(), this.reactor);
-        } catch (MessageProtocolException e) {
-            log.error("message protocol parse error");
+        for (EventListener listener : this.listeners) {
+            listener.onEvent(this.event);
         }
     }
 }

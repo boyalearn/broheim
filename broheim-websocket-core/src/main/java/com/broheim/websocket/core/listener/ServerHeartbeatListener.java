@@ -5,7 +5,12 @@ import com.broheim.websocket.core.context.ChannelContext;
 import com.broheim.websocket.core.context.DefaultChannelContext;
 import com.broheim.websocket.core.event.CloseEvent;
 import com.broheim.websocket.core.event.ConnectionEvent;
+import com.broheim.websocket.core.event.OnMessageEvent;
+import com.broheim.websocket.core.exception.MessageProtocolException;
+import com.broheim.websocket.core.message.SimpleMessage;
+import com.broheim.websocket.core.protocol.Protocol;
 import com.broheim.websocket.core.thread.ServerHeartbeatWorker;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.Session;
 import java.util.Map;
@@ -16,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class ServerHeartbeatListener<Event> implements EventListener<Event> {
 
     private long delay = 2;
@@ -30,6 +36,19 @@ public class ServerHeartbeatListener<Event> implements EventListener<Event> {
             ChannelContext channelContext = ((ConnectionEvent) event).getChannelContext();
 
             startHeartBeat(channelContext);
+        }
+
+        if (event instanceof OnMessageEvent) {
+            ChannelContext channelContext = ((ConnectionEvent) event).getChannelContext();
+            String message = channelContext.getMessage();
+            try {
+                SimpleMessage acceptMessage = (SimpleMessage) channelContext.getProtocol().decode(message);
+                if (Protocol.PING.equals(acceptMessage.getCmd())) {
+                    channelContext.sendMessageSync(channelContext.getProtocol().encode(channelContext, Protocol.ACK));
+                }
+            } catch (MessageProtocolException e) {
+                log.error("message parse error", e);
+            }
         }
 
         if (event instanceof CloseEvent) {

@@ -9,9 +9,11 @@ import com.broheim.websocket.core.exception.MessageProtocolException;
 import com.broheim.websocket.core.message.SimpleMessage;
 import com.broheim.websocket.core.protocol.Protocol;
 import com.broheim.websocket.core.protocol.SimpleProtocol;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.Session;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -61,10 +63,28 @@ public class AsyncMessageSendListener implements EventListener<Event> {
             SimpleMessage responseMessage;
             try {
                 responseMessage = (SimpleMessage) channelContext.getProtocol().decode(message);
+
             } catch (MessageProtocolException e) {
                 log.error("parse protocol error", e);
                 return;
             }
+
+            if (Protocol.ASYNC.equals(responseMessage.getCmd()) && responseMessage.getSerialNo() > 0) {
+                SimpleMessage autoRespMessage = new SimpleMessage();
+                autoRespMessage.setCmd(Protocol.ACK);
+                autoRespMessage.setBody(responseMessage.getCmd());
+                autoRespMessage.setSerialNo(responseMessage.getSerialNo());
+                try {
+                    channelContext.sendText(((SimpleProtocol) channelContext.getProtocol()).encode(channelContext, responseMessage.getCmd(), responseMessage.getSerialNo(), Protocol.ACK));
+                } catch (JsonProcessingException e) {
+                    log.error("auto response json processing exception error", e);
+                } catch (IOException e) {
+                    log.error("auto response io exception error", e);
+                } catch (MessageProtocolException e) {
+                    log.error("auto response message protocol exception error", e);
+                }
+            }
+
             if (null != responseMessage.getSerialNo() && Protocol.ACK.equals(responseMessage.getCmd())
                     && Protocol.ASYNC.equals(responseMessage.getBody())) {
                 synchronized (session) {

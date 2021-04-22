@@ -15,8 +15,6 @@ import java.io.IOException;
 @Slf4j
 public class SimpleProtocol implements Protocol<SimpleMessage> {
 
-    private static final String PING = "ping";
-
     private static final String OK = "ok";
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -46,6 +44,18 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
         }
     }
 
+    public String encode(ChannelContext channelContext, String message, Integer serialNo, String cmd) throws MessageProtocolException {
+        SimpleMessage simpleMessage = new SimpleMessage();
+        simpleMessage.setBody(message);
+        simpleMessage.setCmd(cmd);
+        simpleMessage.setSerialNo(serialNo);
+        try {
+            return objectMapper.writeValueAsString(message);
+        } catch (JsonProcessingException e) {
+            throw new MessageProtocolException();
+        }
+    }
+
 
     @Override
     public SimpleMessage decode(String message) throws MessageProtocolException {
@@ -60,14 +70,13 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
     public void service(ChannelContext channelContext, String message, Reactor reactor) throws MessageProtocolException {
         SimpleMessage simpleMessage = decode(message);
         //如果应答的是OK 需要通知同步等待的Send线程
-        if (OK.equals(simpleMessage.getCmd())) {
+        if (Protocol.ACK.equals(simpleMessage.getCmd())) {
             return;
         }
-
         //自动应答表示已经收到消息
         SimpleMessage autoRespMessage = new SimpleMessage();
-        autoRespMessage.setCmd(OK);
-        autoRespMessage.setBody(null);
+        autoRespMessage.setCmd(Protocol.ACK);
+        autoRespMessage.setBody(simpleMessage.getCmd());
         autoRespMessage.setSerialNo(simpleMessage.getSerialNo());
         try {
             channelContext.sendText(objectMapper.writeValueAsString(autoRespMessage));
@@ -76,8 +85,7 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
         } catch (IOException e) {
             log.error("auto response io exception error", e);
         }
-
-        if (PING.equals(simpleMessage.getCmd())) {
+        if (Protocol.PING.equals(simpleMessage.getCmd())) {
             return;
         }
         if (StringUtil.isEmpty(simpleMessage.getBody())) {

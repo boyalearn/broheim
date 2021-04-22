@@ -13,13 +13,38 @@ import com.broheim.websocket.core.reactor.Reactor;
 public interface Protocol<E> {
 
     /**
+     * 同步消息
+     */
+    String ASYNC = "async";
+
+    /**
+     * 异步消息
+     */
+    String SYNC = "sync";
+
+    /**
+     * 请求响应模型
+     */
+    String REQ_RESP = "req-resp";
+
+    /**
+     * 应答消息
+     */
+    String ACK = "ack";
+
+    /**
+     * ping消息
+     */
+    String PING = "ping";
+
+    /**
      * 编码协议层消息
      *
      * @param message 应用层消息
      * @return 协议层消息
      * @throws MessageProtocolException
      */
-    String encode(ChannelContext channelContext,String message) throws MessageProtocolException;
+    String encode(ChannelContext channelContext, String message) throws MessageProtocolException;
 
 
     /**
@@ -29,7 +54,7 @@ public interface Protocol<E> {
      * @return 协议层消息
      * @throws MessageProtocolException
      */
-    String encode(ChannelContext channelContext,String message,Integer serialNo) throws MessageProtocolException;
+    String encode(ChannelContext channelContext, String message, Integer serialNo) throws MessageProtocolException;
 
 
     /**

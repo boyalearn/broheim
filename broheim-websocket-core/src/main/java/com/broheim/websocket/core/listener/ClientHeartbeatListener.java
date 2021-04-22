@@ -28,8 +28,8 @@ public class ClientHeartbeatListener implements EventListener<Event> {
     public void onEvent(Event event) {
         if (event instanceof ConnectionEvent) {
             ChannelContext channelContext = event.getChannelContext();
-
             startHeartBeat(channelContext);
+            return;
         }
 
         if (event instanceof CloseEvent) {

@@ -2,12 +2,10 @@ package com.broheim.websocket.core.thread;
 
 import com.broheim.websocket.core.client.WebSocketClient;
 import com.broheim.websocket.core.context.ChannelContext;
-import com.broheim.websocket.core.exception.MessageProtocolException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 public class ClientHeartbeatWorker implements Runnable {
@@ -23,16 +21,6 @@ public class ClientHeartbeatWorker implements Runnable {
     @Override
     public void run() {
         log.debug("lose time is {},check connect...", this.loseTime);
-        try {
-            Object o = channelContext.sendMessage("111");
-            System.out.println("send request"+o);
-        } catch (MessageProtocolException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         WebSocketClient endpoint = (WebSocketClient) channelContext.getEndpoint();
         if (loseTime >= 3) {
             try {

@@ -62,6 +62,8 @@ public class ClientConfig {
         if (eventListeners.isEmpty()) {
             eventListeners.add(new MessageReceiveListener(this.acceptor));
             eventListeners.add(new ClientHeartbeatListener());
+            eventListeners.add(new AsyncMessageSendListener());
+            eventListeners.add(new SyncMessageSendListener());
             eventListeners.add(new RequestResponseMessageListener());
         }
         returnPublisher.addListeners(eventListeners);

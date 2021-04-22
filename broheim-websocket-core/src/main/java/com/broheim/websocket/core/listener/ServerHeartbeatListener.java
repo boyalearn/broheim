@@ -9,6 +9,7 @@ import com.broheim.websocket.core.event.OnMessageEvent;
 import com.broheim.websocket.core.exception.MessageProtocolException;
 import com.broheim.websocket.core.message.SimpleMessage;
 import com.broheim.websocket.core.protocol.Protocol;
+import com.broheim.websocket.core.protocol.SimpleProtocol;
 import com.broheim.websocket.core.thread.ServerHeartbeatWorker;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,8 +35,8 @@ public class ServerHeartbeatListener<Event> implements EventListener<Event> {
     public void onEvent(Event event) {
         if (event instanceof ConnectionEvent) {
             ChannelContext channelContext = ((ConnectionEvent) event).getChannelContext();
-
             startHeartBeat(channelContext);
+            return;
         }
 
         if (event instanceof OnMessageEvent) {
@@ -44,11 +45,12 @@ public class ServerHeartbeatListener<Event> implements EventListener<Event> {
             try {
                 SimpleMessage acceptMessage = (SimpleMessage) channelContext.getProtocol().decode(message);
                 if (Protocol.PING.equals(acceptMessage.getCmd())) {
-                    channelContext.sendMessageSync(channelContext.getProtocol().encode(channelContext, Protocol.ACK));
+                    channelContext.sendMessageSync(((SimpleProtocol) channelContext.getProtocol()).encode(channelContext, "", null, Protocol.ACK));
                 }
             } catch (MessageProtocolException e) {
                 log.error("message parse error", e);
             }
+            return;
         }
 
         if (event instanceof CloseEvent) {

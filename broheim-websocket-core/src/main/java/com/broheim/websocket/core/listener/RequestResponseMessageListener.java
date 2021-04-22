@@ -56,6 +56,7 @@ public class RequestResponseMessageListener extends AsyncMessageSendListener imp
             } catch (MessageProtocolException e) {
                 log.error("auto response message protocol exception error", e);
             }
+            return;
         }
 
         if (null != acceptMessage.getSerialNo() && Protocol.ACK.equals(acceptMessage.getCmd())
@@ -64,9 +65,7 @@ public class RequestResponseMessageListener extends AsyncMessageSendListener imp
                 MessageHolder.putObject(session, acceptMessage.getSerialNo(), acceptMessage.getBody());
                 session.notifyAll();
             }
-            return;
         }
-        return;
     }
 
     private String doLogic(ChannelContext channelContext, SimpleMessage simpleMessage) {

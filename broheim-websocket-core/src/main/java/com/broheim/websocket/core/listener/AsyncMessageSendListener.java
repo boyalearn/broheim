@@ -29,7 +29,6 @@ public class AsyncMessageSendListener implements EventListener<Event> {
         }
         if (event instanceof OnMessageEvent) {
             onMessage(channelContext, session, Protocol.ASYNC);
-            return;
         }
     }
 
@@ -37,16 +36,15 @@ public class AsyncMessageSendListener implements EventListener<Event> {
 
         Integer serialNo = channelContext.getEndpoint().sendId().getAndIncrement();
         synchronized (session) {
+            Long startTime = System.currentTimeMillis();
             try {
                 String encodeMessage = ((SimpleProtocol) (channelContext.getProtocol())).encode(channelContext, message, serialNo, protocolType);
                 MessageHolder.putObject(session, serialNo, -1);
-                System.out.println("response :"+encodeMessage);
                 session.getBasicRemote().sendText(encodeMessage);
                 //没有设置超时时间的同步发送默认设置3分钟也不可能无限制等待。
                 if (null == timeOut) {
-                    timeOut = 3 * 60 * 1000L;
+                    timeOut = 60 * 1000L;
                 }
-                Long startTime = System.currentTimeMillis();
                 session.wait(timeOut);
                 Long leaveTimeOut = timeOut + startTime - System.currentTimeMillis();
                 Object result = null;
@@ -66,7 +64,6 @@ public class AsyncMessageSendListener implements EventListener<Event> {
                 MessageHolder.removeObject(session, serialNo);
             }
         }
-        return;
     }
 
     protected void onMessage(ChannelContext channelContext, Session session, String protocolType) {
@@ -89,6 +86,7 @@ public class AsyncMessageSendListener implements EventListener<Event> {
             } catch (MessageProtocolException e) {
                 log.error("auto response message protocol exception error", e);
             }
+            return;
         }
 
         if (null != responseMessage.getSerialNo() && Protocol.ACK.equals(responseMessage.getCmd())
@@ -97,9 +95,8 @@ public class AsyncMessageSendListener implements EventListener<Event> {
                 MessageHolder.putObject(session, responseMessage.getSerialNo(), responseMessage.getBody());
                 session.notifyAll();
             }
-            return;
+
         }
-        return;
     }
 
 }

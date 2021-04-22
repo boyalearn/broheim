@@ -4,13 +4,7 @@ import com.broheim.websocket.core.context.ChannelContext;
 import com.broheim.websocket.core.exception.MessageProtocolException;
 import com.broheim.websocket.core.protocol.Protocol;
 import com.broheim.websocket.core.reactor.Reactor;
-import com.broheim.websocket.core.thread.NamedThreadFactory;
-import com.broheim.websocket.core.thread.Worker;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class DefaultAcceptor<E> implements Acceptor {

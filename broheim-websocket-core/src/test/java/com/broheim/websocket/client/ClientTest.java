@@ -23,7 +23,6 @@ public class ClientTest {
     public static class ClientHandler implements Handler{
         @Override
         public void handle(ChannelContext channelContext, String message) {
-            System.out.println("accept message :" +message);
         }
     }
 }

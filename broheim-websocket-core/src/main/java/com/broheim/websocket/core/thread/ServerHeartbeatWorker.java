@@ -31,5 +31,6 @@ public class ServerHeartbeatWorker implements Runnable {
         } catch (IOException e) {
             log.error("ping error", e);
         }
+        log.debug("lose time is {},check connect...");
     }
 }

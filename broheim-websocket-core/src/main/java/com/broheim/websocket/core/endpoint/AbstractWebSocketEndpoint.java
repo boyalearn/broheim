@@ -3,20 +3,10 @@ package com.broheim.websocket.core.endpoint;
 
 import com.broheim.websocket.core.context.DefaultChannelContext;
 import com.broheim.websocket.core.context.PublisherHolder;
-import com.broheim.websocket.core.event.CloseEvent;
-import com.broheim.websocket.core.event.ConnectionEvent;
-import com.broheim.websocket.core.event.ErrorEvent;
-import com.broheim.websocket.core.event.EventPublisher;
-import com.broheim.websocket.core.event.OnMessageEvent;
+import com.broheim.websocket.core.event.*;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.websocket.CloseReason;
-import javax.websocket.EndpointConfig;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
+import javax.websocket.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -27,6 +17,8 @@ public abstract class AbstractWebSocketEndpoint implements WebSocketEndpoint {
     private EventPublisher publisher;
 
     private Session session;
+
+    private volatile long lastAcceptTime;
 
     public AbstractWebSocketEndpoint() {
         this.publisher = PublisherHolder.findEventPublisher(this.getClass());
@@ -46,10 +38,15 @@ public abstract class AbstractWebSocketEndpoint implements WebSocketEndpoint {
         return publisher;
     }
 
+    public long getLastAcceptTime() {
+        return this.lastAcceptTime;
+    }
+
     @OnOpen
     public void onOpen(Session session, EndpointConfig config) {
         log.debug("session id {} connect...", session.getId());
         this.session = session;
+        this.lastAcceptTime = System.currentTimeMillis();
         publisher.publish(new ConnectionEvent(new DefaultChannelContext(this, config)));
     }
 
@@ -57,6 +54,7 @@ public abstract class AbstractWebSocketEndpoint implements WebSocketEndpoint {
     @OnMessage
     public void onMessage(Session session, String message) {
         log.debug("session on message {}...", message);
+        this.lastAcceptTime = System.currentTimeMillis();
         publisher.publish(new OnMessageEvent(new DefaultChannelContext(this, message)));
     }
 

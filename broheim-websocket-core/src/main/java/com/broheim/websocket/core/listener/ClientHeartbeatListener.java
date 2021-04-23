@@ -5,9 +5,16 @@ import com.broheim.websocket.core.context.DefaultChannelContext;
 import com.broheim.websocket.core.event.CloseEvent;
 import com.broheim.websocket.core.event.ConnectionEvent;
 import com.broheim.websocket.core.event.Event;
+import com.broheim.websocket.core.event.OnMessageEvent;
+import com.broheim.websocket.core.exception.MessageProtocolException;
+import com.broheim.websocket.core.message.SimpleMessage;
+import com.broheim.websocket.core.protocol.Protocol;
+import com.broheim.websocket.core.protocol.SimpleProtocol;
 import com.broheim.websocket.core.thread.ClientHeartbeatWorker;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.Session;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -16,6 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class ClientHeartbeatListener implements EventListener<Event> {
 
     private long delay = 2;
@@ -32,9 +40,30 @@ public class ClientHeartbeatListener implements EventListener<Event> {
             return;
         }
 
+        if (event instanceof OnMessageEvent) {
+            ChannelContext channelContext = event.getChannelContext();
+            responsePingRequest(channelContext);
+            return;
+        }
+
         if (event instanceof CloseEvent) {
             ChannelContext channelContext = event.getChannelContext();
             stopHeartBeat(channelContext);
+        }
+    }
+
+    private void responsePingRequest(ChannelContext channelContext) {
+        String message = channelContext.getMessage();
+        try {
+            SimpleMessage acceptMessage = (SimpleMessage) channelContext.getProtocol().decode(message);
+            if (Protocol.PING.equals(acceptMessage.getCmd())) {
+                channelContext.sendText(((SimpleProtocol) channelContext.getProtocol()).encode(channelContext, Protocol.PING, null, Protocol.ACK));
+            }
+        } catch (MessageProtocolException e) {
+            log.error("parse protocol error", e);
+        } catch (IOException e) {
+            log.error("io error", e);
+
         }
     }
 

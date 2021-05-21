@@ -1,80 +1,111 @@
 package com.broheim.websocket.core.listener;
 
-import com.broheim.websocket.core.context.ChannelContext;
-import com.broheim.websocket.core.context.MessageHolder;
+import com.broheim.websocket.core.endpoint.context.ChannelContext;
+import com.broheim.websocket.core.endpoint.context.DefaultChannelContext;
 import com.broheim.websocket.core.event.Event;
 import com.broheim.websocket.core.event.OnMessageEvent;
-import com.broheim.websocket.core.event.RequestResponseMessageEvent;
-import com.broheim.websocket.core.exception.MessageProtocolException;
-import com.broheim.websocket.core.handler.AsyncHandler;
-import com.broheim.websocket.core.handler.Handler;
-import com.broheim.websocket.core.message.SimpleMessage;
-import com.broheim.websocket.core.protocol.Protocol;
+import com.broheim.websocket.core.event.SendSyncMessageEvent;
+import com.broheim.websocket.core.protocol.message.SimpleMessage;
 import com.broheim.websocket.core.protocol.SimpleProtocol;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import javax.websocket.Session;
-import java.io.IOException;
-import java.util.List;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
-public class RequestResponseMessageListener extends AsyncMessageSendListener implements EventListener<Event> {
-    @Override
-    public void onEvent(Event event) {
-        Session session = event.getChannelContext().getEndpoint().getSession();
-        if (event instanceof RequestResponseMessageEvent) {
-            onEvent(event, event.getChannelContext(), session, ((RequestResponseMessageEvent) event).getMessage(),
-                    ((RequestResponseMessageEvent) event).getTimeOut(), Protocol.REQ_RESP);
-            return;
-        }
-        if (event instanceof OnMessageEvent) {
-            this.onMessage(event.getChannelContext(), session, Protocol.REQ_RESP);
-            return;
-        }
+public class RequestResponseMessageListener implements EventListener<Event> {
+
+    private static final String SEND = "sync";
+
+    private static final String ACK = "ack-sync";
+
+    private SimpleProtocol simpleProtocol;
+
+    private Map<ChannelContext, MessageMetaInfo> messageMetaInfoContext = new ConcurrentHashMap<>();
+
+
+    public RequestResponseMessageListener() {
+        this.simpleProtocol = new SimpleProtocol();
+    }
+
+    public RequestResponseMessageListener(SimpleProtocol simpleProtocol) {
+        this.simpleProtocol = simpleProtocol;
     }
 
     @Override
-    protected void onMessage(ChannelContext channelContext, Session session, String protocolType) {
-        String message = channelContext.getMessage();
-        SimpleMessage acceptMessage;
-        try {
-            acceptMessage = (SimpleMessage) channelContext.getProtocol().decode(message);
-        } catch (MessageProtocolException e) {
-            log.error("parse protocol error", e);
-            return;
-        }
+    public Object onEvent(Event event) throws Exception {
+        if (event instanceof SendSyncMessageEvent) {
+            SendSyncMessageEvent sendEvent = (SendSyncMessageEvent) event;
 
-        if (protocolType.equals(acceptMessage.getCmd()) && acceptMessage.getSerialNo() > 0) {
-            String responseContext = doLogic(channelContext, acceptMessage);
+            DefaultChannelContext channelContext = (DefaultChannelContext) sendEvent.getChannelContext();
+
+            String message = sendEvent.getMessage();
+            SimpleMessage simpleMessage = new SimpleMessage();
+            simpleMessage.setType(SEND);
+            simpleMessage.setBody(message);
+            simpleMessage.setSerialNo(getSendSerialNo(channelContext));
             try {
-                channelContext.sendText(((SimpleProtocol) channelContext.getProtocol()).encode(channelContext,
-                        responseContext, acceptMessage.getSerialNo(), Protocol.ACK));
-            } catch (JsonProcessingException e) {
-                log.error("auto response json processing exception error", e);
-            } catch (IOException e) {
-                log.error("auto response io exception error", e);
-            } catch (MessageProtocolException e) {
-                log.error("auto response message protocol exception error", e);
+                channelContext.sendText(simpleProtocol.encode(simpleMessage));
+            } catch (Exception e) {
+                log.error("send message error", e);
+                return false;
             }
-            return;
+            MessageMetaInfo messageMetaInfo = getMessageMetaInfo(channelContext);
+            synchronized (messageMetaInfo) {
+
+                Object acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
+                while (null == acceptMessage) {
+                    messageMetaInfo.wait();
+                    acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
+                }
+                return acceptMessage;
+
+            }
         }
 
-        if (null != acceptMessage.getSerialNo() && Protocol.ACK.equals(acceptMessage.getCmd())
-                && !Protocol.ASYNC.equals(acceptMessage.getBody())) {
-            synchronized (session) {
-                MessageHolder.putObject(session, acceptMessage.getSerialNo(), acceptMessage.getBody());
-                session.notifyAll();
+        if (event instanceof OnMessageEvent) {
+            OnMessageEvent onMessageEvent = (OnMessageEvent) event;
+            SimpleMessage acceptMessage = simpleProtocol.decode(onMessageEvent.getMessage());
+            if (ACK.equals(acceptMessage.getType())) {
+                DefaultChannelContext channelContext = (DefaultChannelContext) onMessageEvent.getChannelContext();
+                MessageMetaInfo messageMetaInfo = getMessageMetaInfo(channelContext);
+                synchronized (messageMetaInfo) {
+                    messageMetaInfo.getMessageBuffer().put(acceptMessage.getSerialNo(), acceptMessage.getBody());
+                    messageMetaInfo.notifyAll();
+                }
+
             }
         }
+        return null;
     }
 
-    private String doLogic(ChannelContext channelContext, SimpleMessage simpleMessage) {
-        List<Handler> handlerList = channelContext.getEndpoint().getEventPublisher().getHandlerList();
-        for (Handler handler : handlerList) {
-            if (handler instanceof AsyncHandler) {
-                return ((AsyncHandler) handler).handle(simpleMessage.getBody());
+    private MessageMetaInfo getMessageMetaInfo(ChannelContext channelContext) {
+        MessageMetaInfo messageMetaInfo = messageMetaInfoContext.get(channelContext);
+        if (null == messageMetaInfo) {
+            synchronized (messageMetaInfoContext) {
+                messageMetaInfo = messageMetaInfoContext.get(channelContext);
+                if (null == messageMetaInfo) {
+                    messageMetaInfo = new MessageMetaInfo();
+                    messageMetaInfoContext.put(channelContext, messageMetaInfo);
+                }
             }
         }
-        return "";
+        return messageMetaInfo;
+    }
+
+    private int getSendSerialNo(ChannelContext channelContext) {
+        return messageMetaInfoContext.get(channelContext).getId().incrementAndGet();
+    }
+
+
+    @Getter
+    @Setter
+    private static class MessageMetaInfo {
+        private AtomicInteger id = new AtomicInteger(0);
+
+        private Map messageBuffer = new ConcurrentHashMap<>();
     }
 }

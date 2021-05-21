@@ -1,4 +1,4 @@
-package com.broheim.websocket.core.configurator;
+package com.broheim.websocket.core.endpoint.configurator;
 
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;

@@ -1,4 +1,4 @@
-package com.broheim.websocket.core.thread;
+package com.broheim.websocket.core.publisher.threadpool;
 
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;

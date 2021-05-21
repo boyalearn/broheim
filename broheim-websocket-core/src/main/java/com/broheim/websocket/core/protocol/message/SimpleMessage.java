@@ -1,4 +1,4 @@
-package com.broheim.websocket.core.message;
+package com.broheim.websocket.core.protocol.message;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,7 +9,7 @@ public class SimpleMessage implements Message {
 
     private Integer serialNo;
 
-    private String cmd;
+    private String type;
 
     private String body;
 }

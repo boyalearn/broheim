@@ -1,4 +1,4 @@
-package com.broheim.websocket.core.context;
+package com.broheim.websocket.core.endpoint.context;
 
 import javax.websocket.Session;
 import java.util.Map;

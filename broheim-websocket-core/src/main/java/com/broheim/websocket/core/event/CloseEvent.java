@@ -1,12 +1,20 @@
 package com.broheim.websocket.core.event;
 
 
-import com.broheim.websocket.core.context.ChannelContext;
+import com.broheim.websocket.core.endpoint.context.ChannelContext;
+import lombok.Getter;
+import lombok.Setter;
 
-public class CloseEvent extends AbstractEvent{
+import javax.websocket.CloseReason;
 
+@Getter
+@Setter
+public class CloseEvent extends AbstractEvent {
 
-    public CloseEvent(ChannelContext channelContext) {
+    private CloseReason closeReason;
+
+    public CloseEvent(ChannelContext channelContext, CloseReason closeReason) {
         super(channelContext);
+        this.closeReason = closeReason;
     }
 }

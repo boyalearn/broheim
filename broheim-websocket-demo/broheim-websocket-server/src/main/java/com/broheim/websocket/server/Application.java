@@ -1,8 +1,8 @@
 package com.broheim.websocket.server;
 
 import com.broheim.websocket.core.annonation.SocketEndpointPath;
-import com.broheim.websocket.core.context.ChannelContext;
-import com.broheim.websocket.core.handler.AsyncHandler;
+import com.broheim.websocket.core.endpoint.context.ChannelContext;
+import com.broheim.websocket.core.handler.RunnableHandler;
 import com.broheim.websocket.spring.annonation.Command;
 import com.broheim.websocket.spring.annonation.EnableWebSocketServer;
 import com.broheim.websocket.spring.annonation.WebSocketController;
@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 
-
 @SpringBootApplication
 @EnableWebSocketServer
 public class Application {
@@ -22,7 +21,7 @@ public class Application {
     }
 
     @Bean
-    public CommandReactor commandReactor(){
+    public CommandReactor commandReactor() {
         return new CommandReactor();
     }
 
@@ -38,10 +37,10 @@ public class Application {
 
     @Component
     @SocketEndpointPath("/ws")
-    public static class CommonHandler implements AsyncHandler {
+    public static class CommonHandler implements RunnableHandler {
         @Override
-        public String handle(String message) {
-            return "haha";
+        public void handle(ChannelContext channelContext, String message) {
+
         }
     }
 }

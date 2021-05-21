@@ -1,10 +1,11 @@
+/*
 package com.broheim.websocket.core.config;
 
 import com.broheim.websocket.core.acceptor.Acceptor;
 import com.broheim.websocket.core.acceptor.ClientDefaultAcceptor;
 import com.broheim.websocket.core.acceptor.DefaultAcceptor;
-import com.broheim.websocket.core.event.DefaultEventPublisher;
-import com.broheim.websocket.core.event.EventPublisher;
+import com.broheim.websocket.core.publisher.DefaultEventPublisher;
+import com.broheim.websocket.core.publisher.EventPublisher;
 import com.broheim.websocket.core.handler.Handler;
 import com.broheim.websocket.core.listener.*;
 import com.broheim.websocket.core.protocol.Protocol;
@@ -70,3 +71,4 @@ public class ClientConfig {
         return returnPublisher;
     }
 }
+*/

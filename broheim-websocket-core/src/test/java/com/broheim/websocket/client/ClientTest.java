@@ -1,3 +1,4 @@
+/*
 package com.broheim.websocket.client;
 
 import com.broheim.websocket.core.client.WebSocketClient;
@@ -26,3 +27,4 @@ public class ClientTest {
         }
     }
 }
+*/

@@ -1,7 +1,7 @@
 package com.broheim.websocket.core.event;
 
 
-import com.broheim.websocket.core.context.ChannelContext;
+import com.broheim.websocket.core.endpoint.context.ChannelContext;
 
 public abstract class AbstractEvent implements Event {
 
@@ -12,7 +12,6 @@ public abstract class AbstractEvent implements Event {
         this.channelContext = channelContext;
     }
 
-    @Override
     public ChannelContext getChannelContext() {
         return channelContext;
     }

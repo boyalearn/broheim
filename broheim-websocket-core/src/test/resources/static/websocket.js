@@ -16,7 +16,7 @@ function WebSocketClient() {
     this.heartFunction = function () {
         var _this = this;
         _this.connectionTimer = setInterval(function () {
-            _this.send("{\"command\":\"ping\"}")
+            _this.send("{\"type\":\"ping\"}")
         }, _this.heartInterval)
     }
 
@@ -42,7 +42,7 @@ function WebSocketClient() {
             var message = eval('(' + evt.data + ')');
             console.log(message)
             if ("ping" == message.command) {
-                _this.send("{\"command\":\"pong\"}")
+                _this.send("{\"type\":\"pong\"}")
             }
         };
 

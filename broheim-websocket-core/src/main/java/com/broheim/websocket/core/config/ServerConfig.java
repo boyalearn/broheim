@@ -1,11 +1,12 @@
+/*
 package com.broheim.websocket.core.config;
 
 
 import com.broheim.websocket.core.acceptor.Acceptor;
 import com.broheim.websocket.core.acceptor.DefaultAcceptor;
 import com.broheim.websocket.core.annonation.SocketEndpointPath;
-import com.broheim.websocket.core.event.DefaultEventPublisher;
-import com.broheim.websocket.core.event.EventPublisher;
+import com.broheim.websocket.core.publisher.DefaultEventPublisher;
+import com.broheim.websocket.core.publisher.EventPublisher;
 import com.broheim.websocket.core.handler.Handler;
 import com.broheim.websocket.core.listener.*;
 import com.broheim.websocket.core.protocol.Protocol;
@@ -57,8 +58,10 @@ public class ServerConfig {
         acceptor.setReactor(reactor);
         List<EventListener> eventListenerList = findEventListener(endpointPath, acceptor);
         EventPublisher publisher = findPublisher(endpointPath);
-        publisher.addListeners(eventListenerList);
-        publisher.addHandlerList(handlerList);
+*/
+/*        publisher.addListeners(eventListenerList);
+        publisher.addHandlerList(handlerList);*//*
+
         return publisher;
     }
 
@@ -91,7 +94,7 @@ public class ServerConfig {
         if (eventPublisherList.size() > 1) {
             throw new RuntimeException("EventPublisher it's not unique!");
         }
-        return new DefaultEventPublisher();
+        return new DefaultEventPublisher(null);
     }
 
     private List<EventListener> findEventListener(String endpointPath, Acceptor acceptor) {
@@ -102,11 +105,15 @@ public class ServerConfig {
                 eventListenerList.add(h);
             }
         });
-        eventListenerList.add(new ServerHeartbeatListener());
-        eventListenerList.add(new MessageReceiveListener(acceptor));
-        eventListenerList.add(new SyncMessageSendListener());
+*/
+/*        eventListenerList.add(new ServerHeartbeatListener());*//*
+
+        //eventListenerList.add((EventListener) new MessageReceiveListener());
+*/
+/*        eventListenerList.add(new SyncMessageSendListener());
         eventListenerList.add(new RequestResponseMessageListener());
-        eventListenerList.add(new AsyncMessageSendListener());
+        eventListenerList.add(new AsyncMessageSendListener());*//*
+
         return eventListenerList;
     }
 
@@ -221,3 +228,4 @@ public class ServerConfig {
         return new SimpleProtocol();
     }
 }
+*/

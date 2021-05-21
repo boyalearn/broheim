@@ -1,21 +1,35 @@
 package com.broheim.websocket.core.listener;
 
 
-import com.broheim.websocket.core.acceptor.Acceptor;
-import com.broheim.websocket.core.event.OnMessageEvent;
+import com.broheim.websocket.core.handler.DefaultHandler;
+import com.broheim.websocket.core.handler.RunnableHandler;
+import com.broheim.websocket.core.protocol.SimpleProtocol;
+import com.broheim.websocket.core.protocol.message.SimpleMessage;
+import com.broheim.websocket.core.util.StringUtil;
 
-public class MessageReceiveListener<Event> implements EventListener<Event> {
+public class MessageReceiveListener implements EventListener<com.broheim.websocket.core.event.OnMessageEvent> {
 
-    private Acceptor acceptor;
+    private SimpleProtocol simpleProtocol;
 
-    public MessageReceiveListener(Acceptor acceptor) {
-        this.acceptor = acceptor;
+    private RunnableHandler handler;
+
+    public MessageReceiveListener() {
+        this.simpleProtocol = new SimpleProtocol();
+        this.handler = new DefaultHandler();
+    }
+    public MessageReceiveListener(SimpleProtocol simpleProtocol, RunnableHandler handler) {
+        this.simpleProtocol = simpleProtocol;
+        this.handler = handler;
     }
 
     @Override
-    public void onEvent(Event event) {
-        if (event instanceof OnMessageEvent) {
-            acceptor.doAccept(((OnMessageEvent) event).getChannelContext());
+    public Object onEvent(com.broheim.websocket.core.event.OnMessageEvent event) throws Exception {
+        String message = event.getMessage();
+        SimpleMessage simpleMessage = simpleProtocol.decode(message);
+        if (StringUtil.isNotEmpty(simpleMessage.getBody())) {
+            handler.handle(event.getChannelContext(), simpleMessage.getBody());
         }
+        return null;
     }
+
 }

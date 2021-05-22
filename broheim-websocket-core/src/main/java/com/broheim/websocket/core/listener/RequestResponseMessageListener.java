@@ -25,7 +25,7 @@ public class RequestResponseMessageListener extends SendMessageListener implemen
 
     private SimpleProtocol simpleProtocol;
 
-    private Map<ChannelContext, MessageMetaInfo> messageMetaInfoContext = new ConcurrentHashMap<>();
+    private volatile Map<ChannelContext, MessageMetaInfo> messageMetaInfoContext = new ConcurrentHashMap<>();
 
     private CallableHandler callableHandler;
 
@@ -63,9 +63,9 @@ public class RequestResponseMessageListener extends SendMessageListener implemen
                 Long startTime = System.currentTimeMillis();
                 Object acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
                 while (null == acceptMessage && timeOut > 0) {
-                    timeOut = startTime + timeOut - System.currentTimeMillis();
                     messageMetaInfo.wait(timeOut);
                     acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
+                    timeOut = startTime + timeOut - System.currentTimeMillis();
                 }
                 if (null == acceptMessage) {
                     requestResponseMessageEvent.setException(new TimeoutException());

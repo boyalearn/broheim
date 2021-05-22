@@ -61,9 +61,9 @@ public class SyncMessageSendListener extends SendMessageListener implements List
                 Object acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
                 syncMessageEvent.setResult(false);
                 while (null == acceptMessage && timeOut > 0) {
-                    timeOut = startTime + timeOut - System.currentTimeMillis();
                     messageMetaInfo.wait(timeOut);
                     acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
+                    timeOut = startTime + timeOut - System.currentTimeMillis();
                 }
                 if (null == acceptMessage) {
                     syncMessageEvent.setException(new TimeoutException());

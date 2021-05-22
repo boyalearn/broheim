@@ -1,11 +1,6 @@
 package com.broheim.websocket.core.listener;
 
 import com.broheim.websocket.core.endpoint.context.ChannelContext;
-import com.broheim.websocket.core.endpoint.context.DefaultChannelContext;
-import com.broheim.websocket.core.event.accept.OnMessageEvent;
-import com.broheim.websocket.core.handler.CallableHandler;
-import com.broheim.websocket.core.protocol.SimpleProtocol;
-import com.broheim.websocket.core.protocol.message.SimpleMessage;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class SendMessageListener {
 
-    protected Map<ChannelContext, MessageMetaInfo> messageMetaInfoContext = new ConcurrentHashMap<>();
+    protected volatile Map<ChannelContext, MessageMetaInfo> messageMetaInfoContext = new ConcurrentHashMap<>();
 
 
     protected MessageMetaInfo getMessageMetaInfo(ChannelContext channelContext) {
@@ -37,12 +32,11 @@ public abstract class SendMessageListener {
     }
 
 
-
     @Getter
     @Setter
     protected static class MessageMetaInfo {
-        private AtomicInteger id = new AtomicInteger(0);
+        private volatile AtomicInteger id = new AtomicInteger(0);
 
-        private Map messageBuffer = new ConcurrentHashMap<>();
+        private volatile Map messageBuffer = new ConcurrentHashMap<>();
     }
 }

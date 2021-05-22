@@ -1,45 +1,39 @@
 package com.broheim.websocket.core.endpoint.server;
 
-import com.broheim.websocket.core.endpoint.AbstractWebSocketEndpoint;
+import com.broheim.websocket.core.endpoint.ServerWebSocketEndpoint;
+import com.broheim.websocket.core.endpoint.EndpointConfig;
 import com.broheim.websocket.core.listener.AsyncMessageSendListener;
-import com.broheim.websocket.core.listener.EventListener;
-import com.broheim.websocket.core.listener.MessageReceiveListener;
 import com.broheim.websocket.core.listener.RequestResponseMessageListener;
 import com.broheim.websocket.core.listener.ServerHeartbeatListener;
 import com.broheim.websocket.core.listener.SyncMessageSendListener;
-import com.broheim.websocket.core.publisher.DefaultEventPublisher;
 import com.broheim.websocket.core.publisher.EventPublisher;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
-import java.util.List;
 
-@Builder
-public class WebSocketServer {
+@Setter
+@Getter
+public class WebSocketServer extends EndpointConfig {
 
     private static EventPublisher completePublisher;
 
-    private List<EventListener> eventListeners;
-
-    private EventPublisher eventPublisher;
+    public static EventPublisher findEventPublisher(Class<? extends ServerWebSocketEndpoint> aClass) {
+        return completePublisher;
+    }
 
     public void start() {
-        if (null == this.eventListeners) {
-            this.eventListeners = new ArrayList<>();
-            this.eventListeners.add(new ServerHeartbeatListener());
-            this.eventListeners.add(new MessageReceiveListener());
-            this.eventListeners.add(new SyncMessageSendListener());
-            this.eventListeners.add(new AsyncMessageSendListener());
-            this.eventListeners.add(new RequestResponseMessageListener());
+        if (null == this.listeners) {
+            this.listeners = new ArrayList<>();
+            this.listeners.add(new ServerHeartbeatListener());
+            this.listeners.add(new SyncMessageSendListener());
+            this.listeners.add(new AsyncMessageSendListener());
+            this.listeners.add(new RequestResponseMessageListener());
         }
-
-        if (null == this.eventPublisher) {
-            this.eventPublisher = new DefaultEventPublisher(this.eventListeners);
-        }
+        defaultConfig();
         completePublisher = this.eventPublisher;
     }
 
-    public static EventPublisher findEventPublisher(Class<? extends AbstractWebSocketEndpoint> aClass) {
-        return completePublisher;
-    }
+
 }

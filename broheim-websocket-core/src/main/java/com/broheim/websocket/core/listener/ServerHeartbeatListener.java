@@ -3,9 +3,10 @@ package com.broheim.websocket.core.listener;
 
 import com.broheim.websocket.core.endpoint.context.ChannelContext;
 import com.broheim.websocket.core.endpoint.context.DefaultChannelContext;
-import com.broheim.websocket.core.event.CloseEvent;
-import com.broheim.websocket.core.event.ConnectionEvent;
-import com.broheim.websocket.core.event.OnMessageEvent;
+import com.broheim.websocket.core.event.accept.Event;
+import com.broheim.websocket.core.event.accept.OnCloseEvent;
+import com.broheim.websocket.core.event.accept.OnConnectionEvent;
+import com.broheim.websocket.core.event.accept.OnMessageEvent;
 import com.broheim.websocket.core.exception.MessageProtocolException;
 import com.broheim.websocket.core.protocol.SimpleProtocol;
 import com.broheim.websocket.core.protocol.message.SimpleMessage;
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
-public class ServerHeartbeatListener implements EventListener<com.broheim.websocket.core.event.Event> {
+public class ServerHeartbeatListener implements Listener {
 
     private static final String PING = "ping";
 
@@ -49,34 +50,35 @@ public class ServerHeartbeatListener implements EventListener<com.broheim.websoc
     private Map<ChannelContext, HeartbeatContext> heartbeatContextHolder = new ConcurrentHashMap<>();
 
     @Override
-    public Object onEvent(com.broheim.websocket.core.event.Event event) throws Exception {
-        if (event instanceof ConnectionEvent) {
-            ChannelContext channelContext = ((ConnectionEvent) event).getChannelContext();
+    public void onEvent(Event event) throws Exception {
+
+        if (event instanceof OnConnectionEvent) {
+            ChannelContext channelContext = ((OnConnectionEvent) event).getChannelContext();
             startHeartBeat(channelContext);
-            return null;
         }
+
         if (event instanceof OnMessageEvent) {
-            ChannelContext channelContext = ((OnMessageEvent) event).getChannelContext();
+            OnMessageEvent onMessageEvent = (OnMessageEvent) event;
+            DefaultChannelContext defaultChannelContext = (DefaultChannelContext) onMessageEvent.getChannelContext();
             String message = ((OnMessageEvent) event).getMessage();
-            HeartbeatContext heartbeatContext = heartbeatContextHolder.get(channelContext);
+            HeartbeatContext heartbeatContext = heartbeatContextHolder.get(defaultChannelContext);
             heartbeatContext.getLastAcceptTime().set(new Date().getTime());
             try {
                 SimpleMessage acceptMessage = simpleProtocol.decode(message);
                 if (PING.equals(acceptMessage.getType())) {
-                    channelContext.sendMessageSync(PONG);
+                    acceptMessage.setType(PONG);
+                    defaultChannelContext.sendText(simpleProtocol.encode(acceptMessage));
                 }
             } catch (MessageProtocolException e) {
                 log.error("message parse error", e);
             }
             heartbeatContext.getLoseTime().set(0);
-
-            return null;
         }
-        if (event instanceof CloseEvent) {
-            ChannelContext channelContext = ((CloseEvent) event).getChannelContext();
+
+        if (event instanceof OnCloseEvent) {
+            ChannelContext channelContext = ((OnCloseEvent) event).getChannelContext();
             stopHeartBeat(channelContext);
         }
-        return null;
     }
 
     public void startHeartBeat(ChannelContext channelContext) {
@@ -84,15 +86,14 @@ public class ServerHeartbeatListener implements EventListener<com.broheim.websoc
         ScheduledFuture<?> future = HEART_POOL.scheduleWithFixedDelay(new ServerHeartbeatWorker(context, simpleProtocol, heartbeatContextHolder), this.delay, this.delay, TimeUnit.SECONDS);
         HeartbeatContext heartbeatContext = new HeartbeatContext();
         heartbeatContext.setFuture(future);
-        heartbeatContextHolder.put(channelContext, heartbeatContext);
+        heartbeatContextHolder.put(context, heartbeatContext);
     }
 
     public void stopHeartBeat(ChannelContext channelContext) {
         DefaultChannelContext context = (DefaultChannelContext) channelContext;
-        HeartbeatContext heartbeatContext = heartbeatContextHolder.get(context);
+        HeartbeatContext heartbeatContext = heartbeatContextHolder.remove(context);
         if (null != heartbeatContext) {
             heartbeatContext.getFuture().cancel(true);
-            heartbeatContextHolder.remove(context);
         }
 
     }
@@ -128,12 +129,13 @@ public class ServerHeartbeatListener implements EventListener<com.broheim.websoc
                 log.error("ping error", e);
             }
 
-            HeartbeatContext heartbeatContext = heartbeatContextHolder.get(this.channelContext);
-
+            DefaultChannelContext defaultChannelContext = (DefaultChannelContext) this.channelContext;
+            HeartbeatContext heartbeatContext = heartbeatContextHolder.get(defaultChannelContext);
             log.debug("server close connect time {}", heartbeatContext.getLoseTime());
             if (heartbeatContext.getLoseTime().get() > 4) {
                 try {
                     ((DefaultChannelContext) channelContext).getSession().close();
+                    return;
                 } catch (IOException e) {
                     log.error("server close connect error...", e);
                 } finally {

@@ -1,7 +1,7 @@
 package com.broheim.websocket.spring.processor;
 
-import com.broheim.websocket.core.endpoint.AbstractWebSocketEndpoint;
 import com.broheim.websocket.core.endpoint.EndpointCreator;
+import com.broheim.websocket.core.endpoint.ServerWebSocketEndpoint;
 import com.broheim.websocket.spring.annonation.WebSocketController;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
@@ -62,19 +62,19 @@ public class EndpointDefinitionRegistryProcessor implements BeanDefinitionRegist
 
     private void registerBeanDefinition(BeanDefinitionRegistry beanDefinitionRegistry, String path) {
         try {
-            Class<AbstractWebSocketEndpoint> endpoint = endpointCreator.createEndpoint(path);
+            Class<ServerWebSocketEndpoint> endpoint = endpointCreator.createEndpoint(path);
             RootBeanDefinition beanDefinition = new RootBeanDefinition(endpoint);
             beanDefinitionRegistry.registerBeanDefinition(endpoint.getName(), beanDefinition);
         } catch (NotFoundException e) {
-            log.error("not find class exception",e);
+            log.error("not find class exception", e);
         } catch (CannotCompileException e) {
-            log.error("cannot compile exception",e);
+            log.error("cannot compile exception", e);
 
         }
     }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
-        return ;
+        return;
     }
 }

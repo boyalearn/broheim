@@ -1,15 +1,17 @@
 package com.broheim.websocket.spring.config;
 
 
-import com.broheim.websocket.core.config.ServerConfig;
-import com.broheim.websocket.core.context.PublisherHolder;
+import com.broheim.websocket.core.endpoint.server.WebSocketServer;
 import com.broheim.websocket.core.handler.Handler;
-import com.broheim.websocket.core.reactor.Reactor;
 import com.broheim.websocket.spring.annonation.Command;
 import com.broheim.websocket.spring.annonation.WebSocketController;
+import com.broheim.websocket.spring.handler.CommandCallableHandler;
+import com.broheim.websocket.spring.handler.CommandRunnableHandler;
+import com.broheim.websocket.spring.handler.HandlerCallableInvoker;
 import com.broheim.websocket.spring.handler.HandlerCreator;
-import com.broheim.websocket.spring.handler.HandlerInvoker;
-import com.broheim.websocket.spring.reactor.CommandReactor;
+import com.broheim.websocket.spring.handler.HandlerRunnableInvoker;
+import com.broheim.websocket.spring.reactor.CommandCallableReactor;
+import com.broheim.websocket.spring.reactor.CommandRunnableReactor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -32,14 +34,9 @@ public class WebSocketConfigRegisterBean implements InitializingBean, Applicatio
 
         String[] webSocketControllerNames = applicationContext.getBeanNamesForAnnotation(WebSocketController.class);
 
-        List<Handler> handlerList = new ArrayList<>();
+        List<CommandRunnableHandler> commandRunnableHandlers = new ArrayList<>();
 
-        String[] handlerNames = applicationContext.getBeanNamesForType(Handler.class);
-
-        for(String handlerName:handlerNames){
-            Handler handler=(Handler) applicationContext.getBean(handlerName);
-            handlerList.add(handler);
-        }
+        List<CommandCallableHandler> commandCallableHandlers = new ArrayList<>();
 
         for (String webSocketControllerName : webSocketControllerNames) {
             Object bean = applicationContext.getBean(webSocketControllerName);
@@ -48,25 +45,37 @@ public class WebSocketConfigRegisterBean implements InitializingBean, Applicatio
             for (Method method : methods) {
                 Command command = method.getAnnotation(Command.class);
                 if (null != command) {
-                    Class<HandlerInvoker> handlerInvokerClass = handlerCreator.modifyHandlerInvoker(webSocketController.value());
-                    HandlerInvoker handlerInvoker = handlerInvokerClass.newInstance();
-                    handlerInvoker.setObject(bean);
-                    handlerInvoker.setMethod(method);
-                    handlerInvoker.setArgTypes(method.getParameterTypes());
-                    handlerInvoker.setCmd(command.value());
-                    handlerList.add(handlerInvoker);
+
+                    if (void.class == method.getReturnType()) {
+                        HandlerRunnableInvoker handlerInvoker = HandlerRunnableInvoker.class.newInstance();
+                        handlerInvoker.setObject(bean);
+                        handlerInvoker.setMethod(method);
+                        handlerInvoker.setArgTypes(method.getParameterTypes());
+                        handlerInvoker.setCmd(command.value());
+                        commandRunnableHandlers.add(handlerInvoker);
+                    } else {
+                        HandlerCallableInvoker handlerInvoker = HandlerCallableInvoker.class.newInstance();
+                        handlerInvoker.setObject(bean);
+                        handlerInvoker.setMethod(method);
+                        handlerInvoker.setArgTypes(method.getParameterTypes());
+                        handlerInvoker.setCmd(command.value());
+                        commandCallableHandlers.add(handlerInvoker);
+                    }
+
+
                 }
             }
         }
-
-        Reactor reactor = applicationContext.getBean(Reactor.class);
-        if (null == reactor) {
-            reactor = new CommandReactor();
-        }
-        ServerConfig serverConfig = new ServerConfig();
-        serverConfig.addReactor(reactor);
-        serverConfig.addHandlers(handlerList);
-        PublisherHolder.setServerConfig(serverConfig);
+        CommandCallableReactor commandCallableReactor = new CommandCallableReactor();
+        commandCallableReactor.setCommandCallableHandlers(commandCallableHandlers);
+        CommandRunnableReactor commandRunnableReactor = new CommandRunnableReactor();
+        commandRunnableReactor.setCommandRunnableHandlers(commandRunnableHandlers);
+        WebSocketServer server = new WebSocketServer();
+        List<Handler> handlers = new ArrayList<>();
+        handlers.add(commandCallableReactor);
+        handlers.add(commandRunnableReactor);
+        server.setHandlers(handlers);
+        server.start();
     }
 
     @Override

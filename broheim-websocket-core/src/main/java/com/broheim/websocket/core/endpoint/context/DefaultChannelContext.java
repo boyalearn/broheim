@@ -1,17 +1,14 @@
 package com.broheim.websocket.core.endpoint.context;
 
-import com.broheim.websocket.core.event.RequestResponseMessageEvent;
-import com.broheim.websocket.core.event.SendAsyncMessageEvent;
-import com.broheim.websocket.core.event.SendMessageEvent;
-import com.broheim.websocket.core.event.SendSyncMessageEvent;
-import com.broheim.websocket.core.listener.EventListener;
+import com.broheim.websocket.core.event.send.RequestResponseMessageEvent;
+import com.broheim.websocket.core.event.send.SendAsyncMessageEvent;
+import com.broheim.websocket.core.event.send.SendSyncMessageEvent;
 import com.broheim.websocket.core.publisher.EventPublisher;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.Session;
-import java.util.Optional;
 import java.util.concurrent.Future;
 
 @Getter
@@ -36,33 +33,45 @@ public class DefaultChannelContext implements ChannelContext {
     }
 
     @Override
-    public void sendMessageAsync(String message, Long timeOut) throws Exception {
-        SendAsyncMessageEvent asyncMessageEvent = new SendAsyncMessageEvent(this, message);
-        this.eventPublisher.publish(asyncMessageEvent);
-    }
-
-    @Override
     public boolean sendMessageSync(String message) throws Exception {
-        Future future = this.eventPublisher.publish(new SendSyncMessageEvent(this, message));
-        if (Optional.ofNullable(future.get()).isPresent()) {
-            return (boolean) future.get();
+        SendSyncMessageEvent sendSyncMessageEvent = new SendSyncMessageEvent(this, message);
+        this.eventPublisher.publish(sendSyncMessageEvent);
+        if (null != sendSyncMessageEvent.getException()) {
+            throw sendSyncMessageEvent.getException();
         }
-        return false;
+        return (boolean) sendSyncMessageEvent.getResult();
     }
 
     @Override
-    public void sendMessage(String message, EventListener<SendMessageEvent> eventListener) throws Exception {
-        SendMessageEvent sendMessageEvent = new SendSyncMessageEvent(this, message);
-        if (null != eventListener) {
-            eventListener.onEvent(sendMessageEvent);
+    public boolean sendMessageSync(String message, Long timeOut) throws Exception {
+        SendSyncMessageEvent sendSyncMessageEvent = new SendSyncMessageEvent(this, message);
+        sendSyncMessageEvent.setTimeOut(timeOut);
+        this.eventPublisher.publish(sendSyncMessageEvent);
+        if (null != sendSyncMessageEvent.getException()) {
+            throw sendSyncMessageEvent.getException();
         }
+        return (boolean) sendSyncMessageEvent.getResult();
     }
 
     @Override
     public Object sendMessage(String message) throws Exception {
         RequestResponseMessageEvent requestResponseMessageEvent = new RequestResponseMessageEvent(this, message);
-        Future future = this.eventPublisher.publish(requestResponseMessageEvent);
-        return future.get();
+        this.eventPublisher.publish(requestResponseMessageEvent);
+        if (null != requestResponseMessageEvent.getException()) {
+            throw requestResponseMessageEvent.getException();
+        }
+        return requestResponseMessageEvent.getResult();
+    }
+
+    @Override
+    public Object sendMessage(String message, Long timeOut) throws Exception {
+        RequestResponseMessageEvent requestResponseMessageEvent = new RequestResponseMessageEvent(this, message);
+        requestResponseMessageEvent.setTimeOut(timeOut);
+        this.eventPublisher.publish(requestResponseMessageEvent);
+        if (null != requestResponseMessageEvent.getException()) {
+            throw requestResponseMessageEvent.getException();
+        }
+        return requestResponseMessageEvent.getResult();
     }
 
     @Override

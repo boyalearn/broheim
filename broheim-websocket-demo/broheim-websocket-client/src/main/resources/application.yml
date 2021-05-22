@@ -1,0 +1,7 @@
+logging:
+  level:
+    com.broheim: debug
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %-4line [%yellow(%-5thread)] %green(%-20logger{30}) %msg%n'
+server:
+  port: 8080

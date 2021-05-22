@@ -1,7 +1,8 @@
 package com.broheim.websocket.core.publisher;
 
 
-import com.broheim.websocket.core.event.Event;
+import com.broheim.websocket.core.event.accept.Event;
+import com.broheim.websocket.core.event.send.SendEvent;
 
 import java.util.concurrent.Future;
 
@@ -12,5 +13,5 @@ import java.util.concurrent.Future;
  */
 public interface EventPublisher {
 
-    Future publish(Event e);
+    void publish(Event e);
 }

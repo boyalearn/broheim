@@ -1,26 +1,24 @@
 package com.broheim.websocket.core.publisher;
 
 
-import com.broheim.websocket.core.event.Event;
-import com.broheim.websocket.core.listener.EventListener;
+import com.broheim.websocket.core.event.accept.Event;
+import com.broheim.websocket.core.event.send.RequestResponseMessageEvent;
+import com.broheim.websocket.core.event.send.SendSyncMessageEvent;
+import com.broheim.websocket.core.listener.Listener;
 import com.broheim.websocket.core.publisher.threadpool.NamedThreadFactory;
 import lombok.extern.slf4j.Slf4j;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public class DefaultEventPublisher implements EventPublisher {
 
-    List<EventListener> listeners;
+    List<Listener> listeners;
 
-
-    public DefaultEventPublisher(List<EventListener> listeners) {
+    public DefaultEventPublisher(List<Listener> listeners) {
         this.listeners = listeners;
     }
 
@@ -35,50 +33,49 @@ public class DefaultEventPublisher implements EventPublisher {
     );
 
     @Override
-    public Future publish(Event event) {
-        if (null == this.listeners) {
-            return null;
+    public void publish(Event event) {
+        if (event instanceof SendSyncMessageEvent || event instanceof RequestResponseMessageEvent) {
+            for (Listener listener : this.listeners) {
+                try {
+                    listener.onEvent(event);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }else {
+            try {
+                EXECUTOR.execute(new RunnableWorker(listeners, event));
+            } catch (Exception e) {
+                log.error("publish event error.", e);
+            }
         }
-        return EXECUTOR.submit(new Worker(listeners, event));
     }
 
-    @Slf4j
-    public static class Worker implements Callable<Object> {
 
-        private List<EventListener> listeners;
+    @Slf4j
+    public static class RunnableWorker implements Runnable {
+
+        private List<Listener> listeners;
 
         private Event event;
 
-        public Worker(List<EventListener> listeners, Event event) {
+        public RunnableWorker(List<Listener> listeners, Event event) {
             this.listeners = listeners;
             this.event = event;
 
         }
 
-        private boolean isMatchActualTypeArgument(EventListener listener, Event event) {
-            Type[] actualTypeArguments = listener.getClass().getGenericInterfaces();
-            if (actualTypeArguments == null && actualTypeArguments.length == 0) {
-                return true;
-            }
-            actualTypeArguments = ((ParameterizedType) actualTypeArguments[0]).getActualTypeArguments();
-            if (actualTypeArguments == null && actualTypeArguments.length == 0) {
-                return true;
-            }
-            return ((Class<?>) actualTypeArguments[0]).isAssignableFrom(event.getClass());
-        }
 
         @Override
-        public Object call() throws Exception {
-            for (EventListener listener : this.listeners) {
-                if (isMatchActualTypeArgument(listener, event)) {
-                    try {
-                        listener.onEvent(this.event);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+        public void run() {
+            for (Listener listener : this.listeners) {
+                try {
+                    listener.onEvent(this.event);
+                } catch (Exception e) {
+                    e.printStackTrace();
+
                 }
             }
-            return null;
         }
     }
 }

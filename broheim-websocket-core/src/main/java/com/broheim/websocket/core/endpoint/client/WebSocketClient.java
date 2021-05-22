@@ -1,95 +1,102 @@
 package com.broheim.websocket.core.endpoint.client;
 
-import com.broheim.websocket.core.endpoint.WebSocketEndpoint;
+import com.broheim.websocket.core.endpoint.ClientWebSocketEndpoint;
+import com.broheim.websocket.core.endpoint.EndpointConfig;
 import com.broheim.websocket.core.endpoint.context.ChannelContext;
-import com.broheim.websocket.core.endpoint.context.DefaultChannelContext;
-import com.broheim.websocket.core.event.CloseEvent;
-import com.broheim.websocket.core.event.ConnectionEvent;
-import com.broheim.websocket.core.event.ErrorEvent;
-import com.broheim.websocket.core.event.OnMessageEvent;
+import com.broheim.websocket.core.event.accept.Event;
+import com.broheim.websocket.core.event.accept.OnCloseEvent;
+import com.broheim.websocket.core.listener.AsyncMessageSendListener;
+import com.broheim.websocket.core.listener.ClientHeartbeatListener;
+import com.broheim.websocket.core.listener.Listener;
+import com.broheim.websocket.core.listener.RequestResponseMessageListener;
+import com.broheim.websocket.core.listener.SyncMessageSendListener;
 import com.broheim.websocket.core.publisher.EventPublisher;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.websocket.ClientEndpoint;
-import javax.websocket.CloseReason;
 import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
-import javax.websocket.EndpointConfig;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 
 @Slf4j
-@ClientEndpoint
-public class WebSocketClient implements WebSocketEndpoint {
+public class WebSocketClient extends EndpointConfig implements Listener, ChannelContext {
 
-    private static String URL;
+    private static EventPublisher completePublisher;
 
-    private static EventPublisher eventPublisher;
+    private String url;
+
+    private Class<?> clientClass;
 
     private ChannelContext channelContext;
 
-    /**
-     * 必须保留。新连接创建的时候需要触发此构造函数
-     */
-    public WebSocketClient() {
+    public void connect(String url, Class<?> clientClass) throws IOException, DeploymentException {
+
+        this.url = url;
+        this.clientClass = clientClass;
+
+        if (null == this.listeners) {
+            this.listeners = new ArrayList<>();
+            this.listeners.add(new ClientHeartbeatListener());
+            this.listeners.add(new SyncMessageSendListener());
+            this.listeners.add(new AsyncMessageSendListener());
+            this.listeners.add(new RequestResponseMessageListener());
+            this.listeners.add(this);
+        }
+        defaultConfig();
+        completePublisher = this.eventPublisher;
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        URI uri = URI.create(url);
+        Session session = container.connectToServer(clientClass, uri);
+        this.channelContext = (ChannelContext) session.getUserProperties().get(ClientWebSocketEndpoint.CHANNEL_CONTEXT);
     }
 
-    public WebSocketClient(String url, EventPublisher eventPublisher) {
-        URL = url;
-        this.eventPublisher = eventPublisher;
-        try {
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            URI uri = URI.create(URL);
-            container.connectToServer(WebSocketClient.class, uri);
-        } catch (DeploymentException | IOException e) {
-            log.error("connection exception", e);
+    public static EventPublisher getConfigPublisher() {
+        return completePublisher;
+    }
+
+    @Override
+    public void onEvent(Event event) throws Exception {
+        if (event instanceof OnCloseEvent) {
+            OnCloseEvent onCloseEvent = (OnCloseEvent) event;
+            log.debug("reconnect to server");
+            try {
+                connect(this.url, this.clientClass);
+            } catch (Exception e) {
+                onEvent(onCloseEvent);
+            }
         }
     }
 
-    @OnOpen
-    public void onOpen(Session session, EndpointConfig endpointConfig) {
-        log.debug("client connection...");
-        this.channelContext = new DefaultChannelContext(session, eventPublisher);
-        this.eventPublisher.publish(new ConnectionEvent(this.channelContext, endpointConfig));
+    @Override
+    public void sendMessageAsync(String message) throws Exception {
+        this.channelContext.sendMessageAsync(message);
     }
 
-    @OnMessage
-    public void onMessage(String message) {
-        log.debug("Client onMessage: " + message);
-        this.eventPublisher.publish(new OnMessageEvent(this.channelContext, message));
+    @Override
+    public boolean sendMessageSync(String message) throws Exception {
+        return this.channelContext.sendMessageSync(message);
     }
 
-    @OnError
-    public void onError(Session session, Throwable error) {
-        log.error("on error happen. session id is {} ...", session.getId(), error);
-        this.eventPublisher.publish(new ErrorEvent(this.channelContext, error));
+    @Override
+    public boolean sendMessageSync(String message, Long timeOut) throws Exception {
+        return this.channelContext.sendMessageSync(message, timeOut);
     }
 
-    @OnClose
-    public void onClose(Session session, CloseReason closeReason) {
-        log.error("on close happen. session id is {} ...", session.getId());
-        this.eventPublisher.publish(new CloseEvent(this.channelContext, closeReason));
-        reconnect();
+    @Override
+    public Object sendMessage(String message) throws Exception {
+        return this.channelContext.sendMessage(message);
     }
 
-    private void reconnect() {
-        log.debug("start reconnect");
-        try {
-            WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-            URI uri = URI.create(URL);
-            container.connectToServer(WebSocketClient.class, uri);
-        } catch (DeploymentException | IOException e) {
-            log.error("connection exception", e);
-            reconnect();
-        } finally {
-
-        }
+    @Override
+    public Object sendMessage(String message, Long timeOut) throws Exception {
+        return this.channelContext.sendMessage(message, timeOut);
     }
 
+    @Override
+    public void sendText(String text) throws Exception {
+        this.channelContext.sendText(text);
+    }
 }

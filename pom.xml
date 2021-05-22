@@ -7,7 +7,7 @@
     <groupId>org.broheim</groupId>
     <artifactId>broheim</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.1-RELEASE</version>
+    <version>2.0.1-RELEASE</version>
     <modules>
         <module>broheim-websocket-core</module>
         <module>broheim-websocket-starter</module>

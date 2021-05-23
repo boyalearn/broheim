@@ -3,13 +3,13 @@ package com.broheim.websocket.core.endpoint.context;
 import com.broheim.websocket.core.event.send.RequestResponseMessageEvent;
 import com.broheim.websocket.core.event.send.SendAsyncMessageEvent;
 import com.broheim.websocket.core.event.send.SendSyncMessageEvent;
+import com.broheim.websocket.core.exception.ChannelCloseException;
 import com.broheim.websocket.core.publisher.EventPublisher;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.websocket.Session;
-import java.util.concurrent.Future;
 
 @Getter
 @Setter
@@ -76,8 +76,12 @@ public class DefaultChannelContext implements ChannelContext {
 
     @Override
     public void sendText(String text) throws Exception {
-        synchronized (this) {
-            this.session.getBasicRemote().sendText(text);
+        synchronized (this.session) {
+            if (this.session.isOpen()) {
+                this.session.getBasicRemote().sendText(text);
+                return;
+            }
+            throw new ChannelCloseException("channel is close.");
         }
     }
 }

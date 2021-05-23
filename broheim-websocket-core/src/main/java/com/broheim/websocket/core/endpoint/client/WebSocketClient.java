@@ -8,7 +8,7 @@ import com.broheim.websocket.core.event.accept.OnCloseEvent;
 import com.broheim.websocket.core.listener.AsyncMessageSendListener;
 import com.broheim.websocket.core.listener.ClientHeartbeatListener;
 import com.broheim.websocket.core.listener.Listener;
-import com.broheim.websocket.core.listener.RequestResponseMessageListener;
+import com.broheim.websocket.core.listener.RequestResponseMessageSendListener;
 import com.broheim.websocket.core.listener.SyncMessageSendListener;
 import com.broheim.websocket.core.publisher.EventPublisher;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class WebSocketClient extends EndpointConfig implements Listener, Channel
 
     private Class<?> clientClass;
 
-    private ChannelContext channelContext;
+    private volatile ChannelContext channelContext;
 
     public void connect(String url, Class<?> clientClass) throws IOException, DeploymentException {
 
@@ -42,7 +42,7 @@ public class WebSocketClient extends EndpointConfig implements Listener, Channel
             this.listeners.add(new ClientHeartbeatListener());
             this.listeners.add(new SyncMessageSendListener());
             this.listeners.add(new AsyncMessageSendListener());
-            this.listeners.add(new RequestResponseMessageListener());
+            this.listeners.add(new RequestResponseMessageSendListener());
             this.listeners.add(this);
         }
         defaultConfig();
@@ -51,6 +51,7 @@ public class WebSocketClient extends EndpointConfig implements Listener, Channel
         URI uri = URI.create(url);
         Session session = container.connectToServer(clientClass, uri);
         this.channelContext = (ChannelContext) session.getUserProperties().get(ClientWebSocketEndpoint.CHANNEL_CONTEXT);
+        System.out.println(this.channelContext);
     }
 
     public static EventPublisher getConfigPublisher() {

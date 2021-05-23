@@ -2,6 +2,7 @@ package com.broheim.client.service;
 
 import com.broheim.client.bean.CommandMessage;
 import com.broheim.websocket.core.endpoint.client.WebSocketClient;
+import com.broheim.websocket.core.exception.ChannelCloseException;
 import com.broheim.websocket.core.publisher.threadpool.NamedThreadFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,7 @@ public class WebSocketTestService {
 
     @PostConstruct
     public void init() throws IOException, DeploymentException {
-        for (int i = 0; i < 300; i++) {
+        for (int i = 0; i < 50; i++) {
             EXECUTOR.submit(new Worker(webSocketService.webSocketClient));
         }
     }
@@ -65,9 +66,12 @@ public class WebSocketTestService {
                     e.printStackTrace();
                     error++;
                     System.err.println(error);
+                    if(e instanceof ChannelCloseException){
+                        return;
+                    }
                 }
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

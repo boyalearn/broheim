@@ -17,7 +17,7 @@ import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Setter
-public class RequestResponseMessageListener extends SendMessageListener implements Listener {
+public class RequestResponseMessageSendListener extends MessageSendListener implements Listener {
 
     private static final String SEND = "req-resp";
 
@@ -29,11 +29,11 @@ public class RequestResponseMessageListener extends SendMessageListener implemen
 
     private CallableHandler callableHandler;
 
-    public RequestResponseMessageListener() {
+    public RequestResponseMessageSendListener() {
         this.simpleProtocol = new SimpleProtocol();
     }
 
-    public RequestResponseMessageListener(SimpleProtocol simpleProtocol) {
+    public RequestResponseMessageSendListener(SimpleProtocol simpleProtocol) {
         this.simpleProtocol = simpleProtocol;
     }
 
@@ -52,7 +52,8 @@ public class RequestResponseMessageListener extends SendMessageListener implemen
                 channelContext.sendText(simpleProtocol.encode(simpleMessage));
             } catch (Exception e) {
                 log.error("send message error", e);
-                throw new Exception(e);
+                requestResponseMessageEvent.setException(e);
+                return;
             }
             MessageMetaInfo messageMetaInfo = getMessageMetaInfo(channelContext);
             synchronized (messageMetaInfo) {
@@ -61,14 +62,16 @@ public class RequestResponseMessageListener extends SendMessageListener implemen
                     timeOut = 60 * 1000L;
                 }
                 Long startTime = System.currentTimeMillis();
+                long leaveTime = timeOut;
                 Object acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
-                while (null == acceptMessage && timeOut > 0) {
-                    messageMetaInfo.wait(timeOut);
+                while (null == acceptMessage && leaveTime > 0) {
+                    messageMetaInfo.wait(leaveTime);
                     acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
-                    timeOut = startTime + timeOut - System.currentTimeMillis();
+                    leaveTime = startTime - System.currentTimeMillis() + timeOut;
                 }
                 if (null == acceptMessage) {
-                    requestResponseMessageEvent.setException(new TimeoutException());
+                    requestResponseMessageEvent.setException(new TimeoutException("请求超时"));
+                    return;
                 }
                 requestResponseMessageEvent.setResult(acceptMessage);
             }

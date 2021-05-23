@@ -7,7 +7,7 @@ import com.broheim.websocket.core.handler.Handler;
 import com.broheim.websocket.core.handler.RunnableHandler;
 import com.broheim.websocket.core.listener.AsyncMessageSendListener;
 import com.broheim.websocket.core.listener.Listener;
-import com.broheim.websocket.core.listener.RequestResponseMessageListener;
+import com.broheim.websocket.core.listener.RequestResponseMessageSendListener;
 import com.broheim.websocket.core.listener.SyncMessageSendListener;
 import com.broheim.websocket.core.publisher.DefaultEventPublisher;
 import com.broheim.websocket.core.publisher.EventPublisher;
@@ -51,10 +51,10 @@ public abstract class EndpointConfig {
                     }
                 }
             }
-            if (listener instanceof RequestResponseMessageListener) {
+            if (listener instanceof RequestResponseMessageSendListener) {
                 for (Handler handler : this.handlers) {
                     if (handler instanceof CallableHandler) {
-                        ((RequestResponseMessageListener) listener).setCallableHandler((CallableHandler) handler);
+                        ((RequestResponseMessageSendListener) listener).setCallableHandler((CallableHandler) handler);
                     }
                 }
             }

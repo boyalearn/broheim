@@ -6,6 +6,7 @@ import com.broheim.websocket.core.event.accept.Event;
 import com.broheim.websocket.core.event.accept.OnCloseEvent;
 import com.broheim.websocket.core.event.accept.OnConnectionEvent;
 import com.broheim.websocket.core.event.accept.OnMessageEvent;
+import com.broheim.websocket.core.exception.ChannelCloseException;
 import com.broheim.websocket.core.protocol.SimpleProtocol;
 import com.broheim.websocket.core.protocol.message.SimpleMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +32,9 @@ public class ClientHeartbeatListener implements Listener {
 
     private long delay = 2;
 
-    private Map<ChannelContext, Future> futureHolder = new ConcurrentHashMap();
+    private volatile Map<ChannelContext, Future> futureHolder = new ConcurrentHashMap();
 
-    private Map<ChannelContext, AtomicInteger> loseTimeHolder = new ConcurrentHashMap();
+    private volatile Map<ChannelContext, AtomicInteger> loseTimeHolder = new ConcurrentHashMap();
 
 
     public SimpleProtocol simpleProtocol = new SimpleProtocol();
@@ -49,6 +50,10 @@ public class ClientHeartbeatListener implements Listener {
             OnMessageEvent onMessageEvent = (OnMessageEvent) event;
             DefaultChannelContext channelContext = (DefaultChannelContext) onMessageEvent.getChannelContext();
             try {
+                AtomicInteger loseTime = loseTimeHolder.get(channelContext);
+                if (null != loseTime) {
+                    loseTime.set(0);
+                }
                 SimpleMessage acceptMessage = simpleProtocol.decode(onMessageEvent.getMessage());
                 if (PING.equals(acceptMessage.getType())) {
                     acceptMessage.setType(ACK);
@@ -56,8 +61,18 @@ public class ClientHeartbeatListener implements Listener {
                 }
             } catch (Exception e) {
                 log.error("message parse error", e);
+
+                if (e instanceof ChannelCloseException) {
+                    Future future = futureHolder.remove(channelContext);
+                    if (null != future) {
+                        future.cancel(true);
+                    } else {
+                        log.error("future is null");
+                    }
+                    loseTimeHolder.remove(channelContext);
+                    return;
+                }
             }
-            loseTimeHolder.get(channelContext).set(0);
         }
 
         if (event instanceof OnCloseEvent) {
@@ -78,7 +93,7 @@ public class ClientHeartbeatListener implements Listener {
         Future future = futureHolder.remove(context);
         if (null != future) {
             future.cancel(true);
-        }else {
+        } else {
             log.error("future is null");
         }
         loseTimeHolder.remove(channelContext);

@@ -20,7 +20,7 @@ import java.util.concurrent.TimeoutException;
  */
 @Slf4j
 @Setter
-public class SyncMessageSendListener extends SendMessageListener implements Listener {
+public class SyncMessageSendListener extends MessageSendListener implements Listener {
 
     public static final String SEND = "sync";
 
@@ -58,12 +58,13 @@ public class SyncMessageSendListener extends SendMessageListener implements List
                 if (null == timeOut) {
                     timeOut = 60 * 1000L;
                 }
+                long leaveTime = timeOut;
                 Object acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
                 syncMessageEvent.setResult(false);
-                while (null == acceptMessage && timeOut > 0) {
-                    messageMetaInfo.wait(timeOut);
+                while (null == acceptMessage && leaveTime > 0) {
+                    messageMetaInfo.wait(leaveTime);
                     acceptMessage = messageMetaInfo.getMessageBuffer().get(simpleMessage.getSerialNo());
-                    timeOut = startTime + timeOut - System.currentTimeMillis();
+                    leaveTime = startTime + timeOut - System.currentTimeMillis();
                 }
                 if (null == acceptMessage) {
                     syncMessageEvent.setException(new TimeoutException());
@@ -103,7 +104,7 @@ public class SyncMessageSendListener extends SendMessageListener implements List
                 messageMetaInfo.getMessageBuffer().put(acceptMessage.getSerialNo(), acceptMessage.getBody());
                 messageMetaInfo.notifyAll();
             }
-            return ;
+            return;
         }
 
         if (SEND.equals(acceptMessage.getType()) && null != runnableHandler) {

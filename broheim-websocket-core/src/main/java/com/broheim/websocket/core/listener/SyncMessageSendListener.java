@@ -23,17 +23,17 @@ import java.util.concurrent.TimeoutException;
 public class SyncMessageSendListener extends MessageSendListener implements Listener {
 
     public static final String SEND = "sync";
-
     public static final String ACK = "ack-sync";
 
     private SimpleProtocol simpleProtocol;
+    private RunnableHandler runnableHandler;
+
 
 
     public SyncMessageSendListener() {
         this.simpleProtocol = new SimpleProtocol();
     }
 
-    private RunnableHandler runnableHandler;
 
     @Override
     public void onEvent(Event event) throws Exception {

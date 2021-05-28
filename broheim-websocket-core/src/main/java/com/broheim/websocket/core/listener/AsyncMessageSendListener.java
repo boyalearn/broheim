@@ -17,9 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AsyncMessageSendListener implements Listener {
 
     private final static String SEND = "async";
-
     private SimpleProtocol simpleProtocol;
-
     private RunnableHandler runnableHandler;
 
     public AsyncMessageSendListener() {

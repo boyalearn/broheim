@@ -1,6 +1,5 @@
 package com.broheim.websocket.server;
 
-import com.broheim.websocket.core.endpoint.ServerWebSocketEndpoint;
 import com.broheim.websocket.core.endpoint.context.ChannelContext;
 import com.broheim.websocket.core.endpoint.server.WebSocketServer;
 import com.broheim.websocket.core.handler.CallableHandler;
@@ -9,10 +8,8 @@ import com.broheim.websocket.core.handler.RunnableHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
-import javax.websocket.server.ServerEndpoint;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +21,6 @@ public class ServerTest {
         handlers.add(new ServerHandler());
         handlers.add(new ServerCallableHandler());
         server.setHandlers(handlers);
-        server.start();
         SpringApplication.run(ServerTest.class, args);
     }
 
@@ -35,11 +31,10 @@ public class ServerTest {
 
 
     public static class ServerHandler implements RunnableHandler {
-
         @Override
         public void handle(ChannelContext channelContext, String message) {
             try {
-                Object result = channelContext.sendMessage(message + "1");
+                Object result = channelContext.sendMessage(message);
                 System.out.println(result);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -54,7 +49,7 @@ public class ServerTest {
             try {
                 Object result = channelContext.sendMessage(message + "1");
                 System.out.println(result);
-                return message + "1";
+                return message;
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -62,9 +57,4 @@ public class ServerTest {
         }
     }
 
-    @Component
-    @ServerEndpoint("/ws")
-    public static class TestEndpoint extends ServerWebSocketEndpoint {
-
-    }
 }

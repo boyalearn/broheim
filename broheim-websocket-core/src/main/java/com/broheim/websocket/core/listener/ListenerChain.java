@@ -7,7 +7,6 @@ import java.util.List;
 public class ListenerChain {
 
     private int position = 0;
-
     private Listener[] listeners;
 
     public ListenerChain(List<Listener> listenerList) {

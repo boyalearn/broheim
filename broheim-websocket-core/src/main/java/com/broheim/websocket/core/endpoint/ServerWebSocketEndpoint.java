@@ -18,16 +18,17 @@ import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
 
 @Slf4j
 public abstract class ServerWebSocketEndpoint implements WebSocketEndpoint {
 
     private EventPublisher publisher;
-
     private ChannelContext channelContext;
 
     public ServerWebSocketEndpoint() {
-        this.publisher = WebSocketServer.findEventPublisher(this.getClass());
+        ServerEndpoint endpoint = this.getClass().getAnnotation(ServerEndpoint.class);
+        this.publisher = WebSocketServer.findEventPublisher(endpoint.value());
     }
 
 

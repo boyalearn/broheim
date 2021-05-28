@@ -24,8 +24,6 @@ import java.util.List;
 public class WebSocketConfigRegisterBean implements InitializingBean, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
-
-
     private HandlerCreator handlerCreator = new HandlerCreator();
 
 
@@ -33,19 +31,15 @@ public class WebSocketConfigRegisterBean implements InitializingBean, Applicatio
     public void afterPropertiesSet() throws Exception {
 
         String[] webSocketControllerNames = applicationContext.getBeanNamesForAnnotation(WebSocketController.class);
-
         List<CommandRunnableHandler> commandRunnableHandlers = new ArrayList<>();
-
         List<CommandCallableHandler> commandCallableHandlers = new ArrayList<>();
 
         for (String webSocketControllerName : webSocketControllerNames) {
             Object bean = applicationContext.getBean(webSocketControllerName);
-            WebSocketController webSocketController = bean.getClass().getAnnotation(WebSocketController.class);
             Method[] methods = bean.getClass().getDeclaredMethods();
             for (Method method : methods) {
                 Command command = method.getAnnotation(Command.class);
                 if (null != command) {
-
                     if (void.class == method.getReturnType()) {
                         HandlerRunnableInvoker handlerInvoker = HandlerRunnableInvoker.class.newInstance();
                         handlerInvoker.setObject(bean);
@@ -61,8 +55,6 @@ public class WebSocketConfigRegisterBean implements InitializingBean, Applicatio
                         handlerInvoker.setCmd(command.value());
                         commandCallableHandlers.add(handlerInvoker);
                     }
-
-
                 }
             }
         }
@@ -75,7 +67,7 @@ public class WebSocketConfigRegisterBean implements InitializingBean, Applicatio
         handlers.add(commandCallableReactor);
         handlers.add(commandRunnableReactor);
         server.setHandlers(handlers);
-        server.start();
+
     }
 
     @Override

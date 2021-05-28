@@ -1,38 +1,36 @@
 package com.broheim.websocket.core.endpoint.server;
 
-import com.broheim.websocket.core.endpoint.ServerWebSocketEndpoint;
 import com.broheim.websocket.core.endpoint.EndpointConfig;
-import com.broheim.websocket.core.listener.AsyncMessageSendListener;
-import com.broheim.websocket.core.listener.RequestResponseMessageSendListener;
-import com.broheim.websocket.core.listener.ServerHeartbeatListener;
-import com.broheim.websocket.core.listener.SyncMessageSendListener;
+import com.broheim.websocket.core.endpoint.EndpointCreator;
+import com.broheim.websocket.core.endpoint.ServerWebSocketEndpoint;
 import com.broheim.websocket.core.publisher.EventPublisher;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Setter
 @Getter
 public class WebSocketServer extends EndpointConfig {
 
-    private static EventPublisher completePublisher;
+    private static Map<String, EventPublisher> completePublisher = new ConcurrentHashMap<>();
 
-    public static EventPublisher findEventPublisher(Class<? extends ServerWebSocketEndpoint> aClass) {
-        return completePublisher;
+    private EndpointCreator endpointCreator = new EndpointCreator();
+
+    public static EventPublisher findEventPublisher(String path) {
+        return completePublisher.get(path);
     }
 
-    public void start() {
-        if (null == this.listeners) {
-            this.listeners = new ArrayList<>();
-            this.listeners.add(new ServerHeartbeatListener());
-            this.listeners.add(new SyncMessageSendListener());
-            this.listeners.add(new AsyncMessageSendListener());
-            this.listeners.add(new RequestResponseMessageSendListener());
+    public void service(String path, EventPublisher eventPublisher) {
+        completePublisher.put(path, eventPublisher);
+        try {
+            Class<ServerWebSocketEndpoint> endpoint = endpointCreator.createEndpoint(path);
+            Class.forName(endpoint.getName());
+        } catch (Exception e) {
+            log.error("exception happen", e);
         }
-        defaultConfig();
-        completePublisher = this.eventPublisher;
     }
-
-
 }

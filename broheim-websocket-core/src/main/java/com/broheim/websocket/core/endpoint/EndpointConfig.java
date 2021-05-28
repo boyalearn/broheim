@@ -22,11 +22,8 @@ import java.util.List;
 public abstract class EndpointConfig {
 
     protected List<Listener> listeners;
-
     protected EventPublisher eventPublisher;
-
     protected List<Handler> handlers;
-
 
     protected void defaultConfig() {
         if (null == this.handlers) {
@@ -35,7 +32,6 @@ public abstract class EndpointConfig {
             this.handlers.add(new DefaultRunnableHandler());
         }
 
-
         for (Listener listener : this.listeners) {
             if (listener instanceof SyncMessageSendListener) {
                 for (Handler handler : this.handlers) {
@@ -43,6 +39,7 @@ public abstract class EndpointConfig {
                         ((SyncMessageSendListener) listener).setRunnableHandler((RunnableHandler) handler);
                     }
                 }
+                continue;
             }
             if (listener instanceof AsyncMessageSendListener) {
                 for (Handler handler : this.handlers) {
@@ -50,6 +47,7 @@ public abstract class EndpointConfig {
                         ((AsyncMessageSendListener) listener).setRunnableHandler((RunnableHandler) handler);
                     }
                 }
+                continue;
             }
             if (listener instanceof RequestResponseMessageSendListener) {
                 for (Handler handler : this.handlers) {
@@ -57,6 +55,7 @@ public abstract class EndpointConfig {
                         ((RequestResponseMessageSendListener) listener).setCallableHandler((CallableHandler) handler);
                     }
                 }
+                continue;
             }
         }
 

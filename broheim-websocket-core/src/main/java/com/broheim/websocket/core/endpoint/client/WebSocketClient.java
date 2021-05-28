@@ -33,7 +33,6 @@ public class WebSocketClient extends EndpointConfig implements Listener, Channel
     private volatile ChannelContext channelContext;
 
     public void connect(String url, Class<?> clientClass) throws IOException, DeploymentException {
-
         this.url = url;
         this.clientClass = clientClass;
 
@@ -45,13 +44,13 @@ public class WebSocketClient extends EndpointConfig implements Listener, Channel
             this.listeners.add(new RequestResponseMessageSendListener());
             this.listeners.add(this);
         }
+
         defaultConfig();
         completePublisher = this.eventPublisher;
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         URI uri = URI.create(url);
         Session session = container.connectToServer(clientClass, uri);
         this.channelContext = (ChannelContext) session.getUserProperties().get(ClientWebSocketEndpoint.CHANNEL_CONTEXT);
-        System.out.println(this.channelContext);
     }
 
     public static EventPublisher getConfigPublisher() {

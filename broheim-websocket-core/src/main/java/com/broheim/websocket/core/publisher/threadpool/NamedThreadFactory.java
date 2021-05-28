@@ -7,11 +7,8 @@ public class NamedThreadFactory implements ThreadFactory {
     private static final AtomicInteger threadNumber = new AtomicInteger(1);
 
     private final AtomicInteger threadNum = new AtomicInteger(1);
-
     private final String prefix;
-
     private final boolean daemonThread;
-
     private final ThreadGroup threadGroup;
 
     public NamedThreadFactory() {

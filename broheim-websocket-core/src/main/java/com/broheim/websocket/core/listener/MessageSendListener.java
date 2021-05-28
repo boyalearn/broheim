@@ -35,8 +35,7 @@ public abstract class MessageSendListener {
     @Getter
     @Setter
     protected static class MessageMetaInfo {
-        private volatile AtomicInteger id = new AtomicInteger(0);
-
-        private volatile Map messageBuffer = new ConcurrentHashMap<>();
+        private AtomicInteger id = new AtomicInteger(0);
+        private Map messageBuffer = new ConcurrentHashMap<>();
     }
 }

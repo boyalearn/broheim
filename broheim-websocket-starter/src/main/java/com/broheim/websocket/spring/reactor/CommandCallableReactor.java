@@ -15,9 +15,7 @@ import java.util.List;
 @Setter
 @Slf4j
 public class CommandCallableReactor implements CallableHandler {
-
     private ObjectMapper objectMapper = new ObjectMapper();
-
     private List<CommandCallableHandler> commandCallableHandlers;
 
     public CommandCallableReactor(){

@@ -20,13 +20,9 @@ import java.util.concurrent.TimeoutException;
 public class RequestResponseMessageSendListener extends MessageSendListener implements Listener {
 
     private static final String SEND = "req-resp";
-
     private static final String ACK = "ack-req-resp";
-
     private SimpleProtocol simpleProtocol;
-
     private volatile Map<ChannelContext, MessageMetaInfo> messageMetaInfoContext = new ConcurrentHashMap<>();
-
     private CallableHandler callableHandler;
 
     public RequestResponseMessageSendListener() {

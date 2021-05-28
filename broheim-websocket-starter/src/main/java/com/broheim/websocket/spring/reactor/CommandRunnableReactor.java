@@ -15,15 +15,11 @@ import java.util.List;
 @Slf4j
 @Setter
 public class CommandRunnableReactor implements RunnableHandler {
-
-
     private ObjectMapper objectMapper = new ObjectMapper();
-
     private List<CommandRunnableHandler> commandRunnableHandlers;
 
     public CommandRunnableReactor(){
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
     }
 
     @Override

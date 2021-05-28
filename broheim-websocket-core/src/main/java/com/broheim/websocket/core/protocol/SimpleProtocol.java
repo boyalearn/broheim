@@ -24,7 +24,6 @@ public class SimpleProtocol implements Protocol<SimpleMessage> {
         }
     }
 
-
     @Override
     public SimpleMessage decode(String message) throws MessageProtocolException {
         try {

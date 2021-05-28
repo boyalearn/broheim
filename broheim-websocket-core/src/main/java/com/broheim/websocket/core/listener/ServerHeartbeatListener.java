@@ -30,11 +30,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ServerHeartbeatListener implements Listener {
 
     private static final String PING = "ping";
-
     private static final String PONG = "pong";
+    private static ScheduledExecutorService HEART_POOL = Executors.newScheduledThreadPool(10);
+    private Map<ChannelContext, HeartbeatContext> heartbeatContextHolder = new ConcurrentHashMap<>();
 
     private SimpleProtocol simpleProtocol;
-
     private long delay = 2;
 
     public ServerHeartbeatListener() {
@@ -45,9 +45,7 @@ public class ServerHeartbeatListener implements Listener {
         this.simpleProtocol = simpleProtocol;
     }
 
-    private static ScheduledExecutorService HEART_POOL = Executors.newScheduledThreadPool(10);
 
-    private Map<ChannelContext, HeartbeatContext> heartbeatContextHolder = new ConcurrentHashMap<>();
 
     @Override
     public void onEvent(Event event) throws Exception {
@@ -102,16 +100,13 @@ public class ServerHeartbeatListener implements Listener {
     private static class ServerHeartbeatWorker implements Runnable {
 
         private final static SimpleMessage PING_DATA = new SimpleMessage();
-
         private Map<ChannelContext, HeartbeatContext> heartbeatContextHolder;
+        private ChannelContext channelContext;
+        private SimpleProtocol simpleProtocol;
 
         static {
             PING_DATA.setType(PING);
         }
-
-        private ChannelContext channelContext;
-
-        private SimpleProtocol simpleProtocol;
 
         public ServerHeartbeatWorker(ChannelContext channelContext, SimpleProtocol simpleProtocol, Map<ChannelContext, HeartbeatContext> heartbeatContextHolder) {
             this.channelContext = channelContext;
@@ -151,11 +146,8 @@ public class ServerHeartbeatListener implements Listener {
     @Getter
     @Setter
     private static class HeartbeatContext {
-
         private Future future;
-
         private AtomicInteger loseTime = new AtomicInteger(0);
-
         private AtomicLong lastAcceptTime = new AtomicLong(0);
     }
 }

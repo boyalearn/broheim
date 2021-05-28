@@ -25,16 +25,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ClientHeartbeatListener implements Listener {
 
     private static ScheduledExecutorService HEART_POOL = Executors.newScheduledThreadPool(4);
-
     private static final String PING = "ping";
-
     private static final String ACK = "pong";
-
     private long delay = 2;
-
-    private volatile Map<ChannelContext, Future> futureHolder = new ConcurrentHashMap();
-
-    private volatile Map<ChannelContext, AtomicInteger> loseTimeHolder = new ConcurrentHashMap();
+    private  Map<ChannelContext, Future> futureHolder = new ConcurrentHashMap();
+    private  Map<ChannelContext, AtomicInteger> loseTimeHolder = new ConcurrentHashMap();
 
 
     public SimpleProtocol simpleProtocol = new SimpleProtocol();
@@ -103,7 +98,6 @@ public class ClientHeartbeatListener implements Listener {
 
         private final static SimpleMessage PING_DATA = new SimpleMessage();
 
-
         private ChannelContext channelContext;
 
         private Map<ChannelContext, AtomicInteger> loseTimeHolder;
@@ -125,6 +119,7 @@ public class ClientHeartbeatListener implements Listener {
             } catch (Exception e) {
                 log.error("ping error", e);
             }
+
             log.debug("lose time is {},check connect...", loseTime.get());
             if (loseTime.get() >= 3) {
                 try {
@@ -132,7 +127,6 @@ public class ClientHeartbeatListener implements Listener {
                     defaultChannelContext.getSession().close();
                 } catch (IOException e) {
                     log.error("client close connect error...", e);
-
                 } finally {
                     log.debug("client close connect...");
                 }

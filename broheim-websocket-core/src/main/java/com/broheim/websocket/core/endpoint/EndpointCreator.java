@@ -15,7 +15,6 @@ import javassist.bytecode.annotation.StringMemberValue;
 public class EndpointCreator {
 
     public Class<ServerWebSocketEndpoint> createEndpoint(String path) throws NotFoundException, CannotCompileException {
-
         ClassPool cp = ClassPool.getDefault();
         ClassLoader classLoader = this.getClass().getClassLoader();
         LoaderClassPath classLoaderPath = new LoaderClassPath(classLoader);
@@ -34,7 +33,6 @@ public class EndpointCreator {
         annotationsAttribute.addAnnotation(serverEndpoint);
         annotationsAttribute.addAnnotation(component);
         ctFile.addAttribute(annotationsAttribute);
-
         return (Class<ServerWebSocketEndpoint>) ctClass.toClass();
     }
 

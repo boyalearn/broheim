@@ -15,13 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class DefaultEventPublisher implements EventPublisher {
-
-    List<Listener> listeners;
-
-    public DefaultEventPublisher(List<Listener> listeners) {
-        this.listeners = listeners;
-    }
-
     private static final ThreadPoolExecutor EXECUTOR = new ThreadPoolExecutor(
             20,
             40,
@@ -31,6 +24,12 @@ public class DefaultEventPublisher implements EventPublisher {
             new NamedThreadFactory("websocket-pool-"),
             new ThreadPoolExecutor.AbortPolicy()
     );
+
+    List<Listener> listeners;
+
+    public DefaultEventPublisher(List<Listener> listeners) {
+        this.listeners = listeners;
+    }
 
     @Override
     public void publish(Event event) {
@@ -42,7 +41,7 @@ public class DefaultEventPublisher implements EventPublisher {
                     e.printStackTrace();
                 }
             }
-        }else {
+        } else {
             try {
                 EXECUTOR.execute(new RunnableWorker(listeners, event));
             } catch (Exception e) {
@@ -56,15 +55,12 @@ public class DefaultEventPublisher implements EventPublisher {
     public static class RunnableWorker implements Runnable {
 
         private List<Listener> listeners;
-
         private Event event;
 
         public RunnableWorker(List<Listener> listeners, Event event) {
             this.listeners = listeners;
             this.event = event;
-
         }
-
 
         @Override
         public void run() {
@@ -72,8 +68,7 @@ public class DefaultEventPublisher implements EventPublisher {
                 try {
                     listener.onEvent(this.event);
                 } catch (Exception e) {
-                    e.printStackTrace();
-
+                    log.error("have a error", e);
                 }
             }
         }
